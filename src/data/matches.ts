@@ -84,10 +84,7 @@ export const matches: Match[] = [
     homeFlag: 'es', awayFlag: 'ma',
     venue: 'MetLife Stadium', city: 'New Jersey', country: 'USA',
     utcDate: '2026-06-12T00:00:00Z',
-    // Marcador de demo para visualización del diseño
-    status: 'completed',
-    homeScore: 2,
-    awayScore: 0,
+    status: 'upcoming',
   },
   {
     id: 'GB2', phase: 'group', group: 'B', matchNumber: 4,
@@ -95,9 +92,7 @@ export const matches: Match[] = [
     homeFlag: 'pt', awayFlag: 'hr',
     venue: "Levi's Stadium", city: 'San Francisco', country: 'USA',
     utcDate: '2026-06-12T23:00:00Z',
-    status: 'completed',
-    homeScore: 3,
-    awayScore: 1,
+    status: 'upcoming',
   },
   {
     id: 'GB3', phase: 'group', group: 'B', matchNumber: 19,
