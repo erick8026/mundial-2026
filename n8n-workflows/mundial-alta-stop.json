@@ -62,8 +62,10 @@
         "options": { "returnAllMatchingRows": true }
       },
       "credentials": {
-        "googleSheetsOAuth2Api": { "id": "REEMPLAZAR_CON_TU_CREDENTIAL_ID", "name": "Google Sheets" }
-      }
+        "googleSheetsOAuth2Api": { "id": "AGREGAR_CREDENTIAL_GOOGLE_SHEETS", "name": "Google Sheets" }
+      },
+      "notesInFlow": true,
+      "notes": "Conecta tu credencial de Google Sheets\ny reemplaza el Spreadsheet ID."
     },
     {
       "id": "aaaa0005",
@@ -121,46 +123,58 @@
         "options": {}
       },
       "credentials": {
-        "googleSheetsOAuth2Api": { "id": "REEMPLAZAR_CON_TU_CREDENTIAL_ID", "name": "Google Sheets" }
+        "googleSheetsOAuth2Api": { "id": "AGREGAR_CREDENTIAL_GOOGLE_SHEETS", "name": "Google Sheets" }
       }
     },
-
     {
       "id": "aaaa0015",
-      "name": "GPT — Bienvenida",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4,
+      "name": "GPT Bienvenida",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1,
       "position": [1880, 140],
       "parameters": {
-        "method": "POST",
-        "url": "https://api.openai.com/v1/chat/completions",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            { "name": "Authorization", "value": "Bearer PEGAR_OPENAI_API_KEY_AQUI" },
-            { "name": "Content-Type", "value": "application/json" }
+        "resource": "chat",
+        "operation": "complete",
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list"
+        },
+        "messages": {
+          "values": [
+            {
+              "role": "system",
+              "content": "Eres el asistente oficial del portal mundial.rodai.io para el Mundial 2026. Escribes en español, tono entusiasta pero profesional, para WhatsApp. Máximo 200 caracteres. Solo *negrita* si es necesario. Sin markdown pesado. Siempre termina el mensaje con: Responde STOP para cancelar."
+            },
+            {
+              "role": "user",
+              "content": "Genera un mensaje de confirmación de suscripción para alertas del Mundial 2026. El usuario acaba de escribir ALTA. Incluye que recibirá: alerta 30 min antes de cada partido, avisos de goles y resultado final."
+            }
           ]
         },
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "{{ JSON.stringify({ model: 'gpt-4o-mini', max_tokens: 220, messages: [ { role: 'system', content: 'Eres el asistente oficial del portal mundial.rodai.io para el Mundial 2026. Escribes en español, tono entusiasta pero profesional, para WhatsApp. Máximo 200 caracteres. Nunca uses markdown pesado, solo *negrita* si es necesario. Siempre termina con: Responde STOP para cancelar.' }, { role: 'user', content: 'Genera un mensaje de confirmación de suscripción para alertas del Mundial 2026. El usuario acaba de escribir ALTA. Incluye que recibirá: alerta 30 min antes de cada partido, avisos de goles y resultado final.' } ] }) }}",
-        "options": {}
+        "options": {
+          "maxTokens": 220
+        }
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "DNniMXGQP8C9zu5z",
+          "name": "OpenAi account 2"
+        }
       },
       "notesInFlow": true,
-      "notes": "Genera el mensaje de bienvenida con GPT-4o-mini.\nCosto: ~$0.0001 por suscripción.\nReemplaza PEGAR_OPENAI_API_KEY_AQUI."
+      "notes": "Usa la misma credencial OpenAI del RODAI AGENTE V2.\nModelo: gpt-4.1-mini (~$0.0001/msg)"
     },
-
     {
       "id": "aaaa0016",
-      "name": "Extraer Texto GPT Bienvenida",
+      "name": "Extraer Bienvenida",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [2120, 140],
       "parameters": {
-        "jsCode": "const gptResponse = $input.first().json;\nconst text = gptResponse.choices?.[0]?.message?.content || '✅ ¡Suscrito! Recibirás alertas del Mundial 2026. Responde STOP para cancelar.';\nconst phone = $('Parsear Mensaje').first().json.phone;\nreturn [{ json: { phone, mensajeGenerado: text.trim() } }];"
+        "jsCode": "// El nodo OpenAI devuelve el texto en message.content o content\nconst output = $input.first().json;\nconst text = output.message?.content || output.content || output.choices?.[0]?.message?.content || '✅ ¡Suscrito al Mundial 2026! Recibirás alertas de partidos, goles y resultados. Responde STOP para cancelar.';\nconst phone = $('Parsear Mensaje').first().json.phone;\nreturn [{ json: { phone, mensajeGenerado: text.trim() } }];"
       }
     },
-
     {
       "id": "aaaa0008",
       "name": "Enviar Bienvenida",
@@ -183,43 +197,55 @@
         "options": {}
       },
       "notesInFlow": true,
-      "notes": "Ventana 24h activa (usuario acaba de escribir ALTA)\n→ Sin riesgo de spam, no necesita template."
+      "notes": "Ventana 24h activa — el usuario acaba\nde escribir ALTA. Sin riesgo de spam."
     },
-
     {
       "id": "aaaa0017",
-      "name": "GPT — Ya Suscrito",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4,
+      "name": "GPT Ya Suscrito",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1,
       "position": [1640, 380],
       "parameters": {
-        "method": "POST",
-        "url": "https://api.openai.com/v1/chat/completions",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            { "name": "Authorization", "value": "Bearer PEGAR_OPENAI_API_KEY_AQUI" },
-            { "name": "Content-Type", "value": "application/json" }
+        "resource": "chat",
+        "operation": "complete",
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list"
+        },
+        "messages": {
+          "values": [
+            {
+              "role": "system",
+              "content": "Asistente del Mundial 2026 para WhatsApp. Español, tono amigable. Máximo 120 caracteres."
+            },
+            {
+              "role": "user",
+              "content": "El usuario ya está suscrito. Dile de forma simpática que ya lo tenemos registrado y que le llegará todo. Recuérdale que puede cancelar con STOP."
+            }
           ]
         },
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "{{ JSON.stringify({ model: 'gpt-4o-mini', max_tokens: 100, messages: [ { role: 'system', content: 'Asistente del Mundial 2026 para WhatsApp. Español, tono amigable. Máximo 120 caracteres.' }, { role: 'user', content: 'El usuario ya está suscrito. Dile de forma simpática que ya lo tenemos registrado y que le llegará todo. Recuérdale que puede cancelar con STOP.' } ] }) }}",
-        "options": {}
+        "options": {
+          "maxTokens": 100
+        }
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "DNniMXGQP8C9zu5z",
+          "name": "OpenAi account 2"
+        }
       }
     },
-
     {
       "id": "aaaa0018",
-      "name": "Extraer Texto GPT Ya Suscrito",
+      "name": "Extraer Ya Suscrito",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [1880, 380],
       "parameters": {
-        "jsCode": "const gptResponse = $input.first().json;\nconst text = gptResponse.choices?.[0]?.message?.content || '⚽ Ya estás en la lista. Te llegará todo del Mundial 2026. Responde STOP para cancelar.';\nconst phone = $('Parsear Mensaje').first().json.phone;\nreturn [{ json: { phone, mensajeGenerado: text.trim() } }];"
+        "jsCode": "const output = $input.first().json;\nconst text = output.message?.content || output.content || output.choices?.[0]?.message?.content || '⚽ Ya estás en la lista del Mundial 2026. Responde STOP para cancelar.';\nconst phone = $('Parsear Mensaje').first().json.phone;\nreturn [{ json: { phone, mensajeGenerado: text.trim() } }];"
       }
     },
-
     {
       "id": "aaaa0009",
       "name": "Enviar Ya Suscrito",
@@ -242,7 +268,6 @@
         "options": {}
       }
     },
-
     {
       "id": "aaaa0010",
       "name": "¿Es STOP?",
@@ -283,7 +308,7 @@
         "options": {}
       },
       "credentials": {
-        "googleSheetsOAuth2Api": { "id": "REEMPLAZAR_CON_TU_CREDENTIAL_ID", "name": "Google Sheets" }
+        "googleSheetsOAuth2Api": { "id": "AGREGAR_CREDENTIAL_GOOGLE_SHEETS", "name": "Google Sheets" }
       }
     },
     {
@@ -305,44 +330,56 @@
         "options": {}
       },
       "credentials": {
-        "googleSheetsOAuth2Api": { "id": "REEMPLAZAR_CON_TU_CREDENTIAL_ID", "name": "Google Sheets" }
+        "googleSheetsOAuth2Api": { "id": "AGREGAR_CREDENTIAL_GOOGLE_SHEETS", "name": "Google Sheets" }
       }
     },
-
     {
       "id": "aaaa0019",
-      "name": "GPT — Confirmar Baja",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4,
+      "name": "GPT Confirmar Baja",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1,
       "position": [1640, 480],
       "parameters": {
-        "method": "POST",
-        "url": "https://api.openai.com/v1/chat/completions",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            { "name": "Authorization", "value": "Bearer PEGAR_OPENAI_API_KEY_AQUI" },
-            { "name": "Content-Type", "value": "application/json" }
+        "resource": "chat",
+        "operation": "complete",
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list"
+        },
+        "messages": {
+          "values": [
+            {
+              "role": "system",
+              "content": "Asistente del Mundial 2026. WhatsApp. Español. Tono cálido. Máximo 150 caracteres."
+            },
+            {
+              "role": "user",
+              "content": "El usuario pidió darse de baja (STOP). Confirma la baja, sé amigable, dile que puede volver escribiendo ALTA Mundial 2026."
+            }
           ]
         },
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "{{ JSON.stringify({ model: 'gpt-4o-mini', max_tokens: 120, messages: [ { role: 'system', content: 'Asistente del Mundial 2026. WhatsApp. Español. Tono cálido. Máximo 150 caracteres.' }, { role: 'user', content: 'El usuario pidió darse de baja (STOP). Confirma la baja, sé amigable, dile que puede volver cuando quiera escribiendo ALTA Mundial 2026.' } ] }) }}",
-        "options": {}
+        "options": {
+          "maxTokens": 120
+        }
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "DNniMXGQP8C9zu5z",
+          "name": "OpenAi account 2"
+        }
       }
     },
-
     {
       "id": "aaaa0020",
-      "name": "Extraer Texto GPT Baja",
+      "name": "Extraer Texto Baja",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [1880, 480],
       "parameters": {
-        "jsCode": "const gptResponse = $input.first().json;\nconst text = gptResponse.choices?.[0]?.message?.content || '✅ Te dimos de baja. Si quieres volver, escribe ALTA Mundial 2026. ¡Hasta pronto! 👋';\nconst phone = $('Parsear Mensaje').first().json.phone;\nreturn [{ json: { phone, mensajeGenerado: text.trim() } }];"
+        "jsCode": "const output = $input.first().json;\nconst text = output.message?.content || output.content || output.choices?.[0]?.message?.content || '✅ Te dimos de baja. Si quieres volver escribe ALTA Mundial 2026. ¡Hasta pronto! 👋';\nconst phone = $('Parsear Mensaje').first().json.phone;\nreturn [{ json: { phone, mensajeGenerado: text.trim() } }];"
       }
     },
-
     {
       "id": "aaaa0013",
       "name": "Confirmar Baja",
@@ -370,7 +407,7 @@
       "name": "Ignorar Mensaje",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
-      "position": [1160, 660],
+      "position": [1160, 680],
       "parameters": {}
     }
   ],
@@ -395,23 +432,23 @@
     },
     "¿Ya Suscrito?": {
       "main": [
-        [{ "node": "GPT — Ya Suscrito", "type": "main", "index": 0 }],
+        [{ "node": "GPT Ya Suscrito", "type": "main", "index": 0 }],
         [{ "node": "Agregar Suscriptor", "type": "main", "index": 0 }]
       ]
     },
     "Agregar Suscriptor": {
-      "main": [[{ "node": "GPT — Bienvenida", "type": "main", "index": 0 }]]
+      "main": [[{ "node": "GPT Bienvenida", "type": "main", "index": 0 }]]
     },
-    "GPT — Bienvenida": {
-      "main": [[{ "node": "Extraer Texto GPT Bienvenida", "type": "main", "index": 0 }]]
+    "GPT Bienvenida": {
+      "main": [[{ "node": "Extraer Bienvenida", "type": "main", "index": 0 }]]
     },
-    "Extraer Texto GPT Bienvenida": {
+    "Extraer Bienvenida": {
       "main": [[{ "node": "Enviar Bienvenida", "type": "main", "index": 0 }]]
     },
-    "GPT — Ya Suscrito": {
-      "main": [[{ "node": "Extraer Texto GPT Ya Suscrito", "type": "main", "index": 0 }]]
+    "GPT Ya Suscrito": {
+      "main": [[{ "node": "Extraer Ya Suscrito", "type": "main", "index": 0 }]]
     },
-    "Extraer Texto GPT Ya Suscrito": {
+    "Extraer Ya Suscrito": {
       "main": [[{ "node": "Enviar Ya Suscrito", "type": "main", "index": 0 }]]
     },
     "¿Es STOP?": {
@@ -424,17 +461,20 @@
       "main": [[{ "node": "Marcar Inactivo", "type": "main", "index": 0 }]]
     },
     "Marcar Inactivo": {
-      "main": [[{ "node": "GPT — Confirmar Baja", "type": "main", "index": 0 }]]
+      "main": [[{ "node": "GPT Confirmar Baja", "type": "main", "index": 0 }]]
     },
-    "GPT — Confirmar Baja": {
-      "main": [[{ "node": "Extraer Texto GPT Baja", "type": "main", "index": 0 }]]
+    "GPT Confirmar Baja": {
+      "main": [[{ "node": "Extraer Texto Baja", "type": "main", "index": 0 }]]
     },
-    "Extraer Texto GPT Baja": {
+    "Extraer Texto Baja": {
       "main": [[{ "node": "Confirmar Baja", "type": "main", "index": 0 }]]
     }
   },
   "active": false,
   "settings": {
     "executionOrder": "v1"
+  },
+  "meta": {
+    "instanceId": "946060f9d03aae3a7f3b3745b5597dd04f16e907beb9bc1e644b546ce2299e41"
   }
 }
