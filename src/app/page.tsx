@@ -6,6 +6,7 @@ import type { Phase } from '@/types/match';
 import MatchCard from '@/components/MatchCard';
 import PhaseFilter, { type FilterValue } from '@/components/PhaseFilter';
 import SyncButton from '@/components/SyncButton';
+import WhatsAppButton from '@/components/WhatsAppButton';
 
 const BASE_URL =
   typeof window !== 'undefined'
@@ -77,8 +78,11 @@ export default function Home() {
             <Stat value={totalUpcoming} label="Próximos" color="bg-white/20" />
           </div>
 
-          {/* Sync button */}
-          <SyncButton baseUrl={BASE_URL} />
+          {/* Action buttons */}
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <SyncButton baseUrl={BASE_URL} />
+            <WhatsAppButton />
+          </div>
         </div>
       </header>
 

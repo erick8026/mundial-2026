@@ -1,0 +1,379 @@
+{
+  "name": "🌍 Mundial 2026 — WhatsApp ALTA / STOP",
+  "nodes": [
+    {
+      "id": "aaaa0001",
+      "name": "Kapso Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [200, 400],
+      "parameters": {
+        "path": "mundial-kapso",
+        "responseMode": "onReceived",
+        "httpMethod": "POST",
+        "options": {}
+      },
+      "notesInFlow": true,
+      "notes": "ENDPOINT para Kapso:\nProducción: https://TU-N8N/webhook/mundial-kapso\nTest:       https://TU-N8N/webhook-test/mundial-kapso\n\nAjustar el formato en el nodo 'Parsear Mensaje'\nsi el payload de Kapso difiere."
+    },
+    {
+      "id": "aaaa0002",
+      "name": "Parsear Mensaje",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 400],
+      "parameters": {
+        "jsCode": "const body = $input.first().json;\n\nlet phone = '';\nlet messageText = '';\n\n// --- Formato Kapso (ajustar si es necesario) ---\nif (body.from) {\n  phone = String(body.from);\n  messageText = typeof body.text === 'string'\n    ? body.text\n    : (body.text?.body || body.message || '');\n}\n// --- Formato Meta WhatsApp Cloud API ---\nelse if (body.entry?.[0]?.changes?.[0]?.value?.messages) {\n  const msg = body.entry[0].changes[0].value.messages[0];\n  phone = msg.from;\n  messageText = msg.text?.body || '';\n}\n// --- Fallback genérico ---\nelse {\n  phone = String(body.phone || body.sender || body.wa_id || body.from || '');\n  messageText = String(body.message || body.body || body.text || '');\n}\n\n// Limpiar teléfono (quitar +, espacios, guiones)\nphone = phone.replace(/[\\s+\\-().]/g, '');\n\n// Detectar acción\nconst msgUp = messageText.trim().toUpperCase();\nlet action = 'OTHER';\nif (msgUp.includes('ALTA') && msgUp.includes('MUNDIAL')) action = 'ALTA';\nelse if (msgUp === 'STOP' || msgUp.startsWith('STOP ')) action = 'STOP';\n\nreturn [{ json: { phone, messageText, action, timestamp: new Date().toISOString() } }];"
+      }
+    },
+    {
+      "id": "aaaa0003",
+      "name": "¿Es ALTA?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [680, 400],
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "ifalta1",
+              "leftValue": "={{ $json.action }}",
+              "rightValue": "ALTA",
+              "operator": { "type": "string", "operation": "equals" }
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "aaaa0004",
+      "name": "Leer Suscriptores",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [920, 260],
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "PEGAR_SPREADSHEET_ID_AQUI",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Suscriptores",
+          "mode": "name"
+        },
+        "filtersUI": {},
+        "options": { "returnAllMatchingRows": true }
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REEMPLAZAR_CON_TU_CREDENTIAL_ID",
+          "name": "Google Sheets"
+        }
+      },
+      "notesInFlow": true,
+      "notes": "Reemplaza el Spreadsheet ID y reconecta\nla credencial de Google Sheets."
+    },
+    {
+      "id": "aaaa0005",
+      "name": "Verificar Si Existe",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1160, 260],
+      "parameters": {
+        "jsCode": "const phone = $('Parsear Mensaje').first().json.phone;\nconst rows = $input.all();\n\nconst found = rows.find(r => {\n  const rowPhone = String(r.json.phone || r.json.Phone || '').replace(/[\\s+]/g, '');\n  const active = String(r.json.active || r.json.Active || 'FALSE').toUpperCase();\n  return rowPhone === phone && active === 'TRUE';\n});\n\nreturn [{ json: {\n  phone,\n  alreadyActive: !!found,\n  timestamp: $('Parsear Mensaje').first().json.timestamp\n}}];"
+      }
+    },
+    {
+      "id": "aaaa0006",
+      "name": "¿Ya Suscrito?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1400, 260],
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "ifsub1",
+              "leftValue": "={{ $json.alreadyActive }}",
+              "rightValue": true,
+              "operator": { "type": "boolean", "operation": "true" }
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "aaaa0007",
+      "name": "Agregar Suscriptor",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [1640, 140],
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "PEGAR_SPREADSHEET_ID_AQUI",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Suscriptores",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "phone": "={{ $json.phone }}",
+            "subscribed_at": "={{ $json.timestamp }}",
+            "active": "TRUE",
+            "name": ""
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REEMPLAZAR_CON_TU_CREDENTIAL_ID",
+          "name": "Google Sheets"
+        }
+      }
+    },
+    {
+      "id": "aaaa0008",
+      "name": "Enviar Bienvenida",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1880, 140],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kapso.io/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "Bearer PEGAR_KAPSO_API_KEY_AQUI" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ to: $('Parsear Mensaje').first().json.phone, type: 'text', text: { body: '\\u2705 \\u00a1Listo! Est\\u00e1s suscrito a las alertas del *Mundial 2026* \\ud83c\\udfc6\\u26bd\\n\\nTe avisar\\u00e9:\\n\\u2022 30 min antes de cada partido\\n\\u2022 Cuando haya goles\\n\\u2022 El resultado final\\n\\nEnv\\u00eda *STOP* en cualquier momento para cancelar.' } }) }}",
+        "options": {}
+      },
+      "notesInFlow": true,
+      "notes": "Ajusta la URL de Kapso si es diferente.\nReemplaza PEGAR_KAPSO_API_KEY_AQUI con tu API Key real."
+    },
+    {
+      "id": "aaaa0009",
+      "name": "Enviar Ya Suscrito",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1640, 380],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kapso.io/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "Bearer PEGAR_KAPSO_API_KEY_AQUI" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ to: $json.phone, type: 'text', text: { body: '\\u26bd Ya est\\u00e1s suscrito a las alertas del *Mundial 2026*.\\n\\nEnv\\u00eda *STOP* si deseas cancelar.' } }) }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "aaaa0010",
+      "name": "¿Es STOP?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [920, 560],
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "ifstop1",
+              "leftValue": "={{ $json.action }}",
+              "rightValue": "STOP",
+              "operator": { "type": "string", "operation": "equals" }
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "aaaa0011",
+      "name": "Buscar Suscriptor STOP",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [1160, 480],
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "PEGAR_SPREADSHEET_ID_AQUI",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Suscriptores",
+          "mode": "name"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "phone",
+              "lookupValue": "={{ $('Parsear Mensaje').first().json.phone }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REEMPLAZAR_CON_TU_CREDENTIAL_ID",
+          "name": "Google Sheets"
+        }
+      }
+    },
+    {
+      "id": "aaaa0012",
+      "name": "Marcar Inactivo",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [1400, 480],
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "PEGAR_SPREADSHEET_ID_AQUI",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Suscriptores",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "active": "FALSE"
+          },
+          "matchingColumns": ["phone"],
+          "schema": []
+        },
+        "options": {}
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REEMPLAZAR_CON_TU_CREDENTIAL_ID",
+          "name": "Google Sheets"
+        }
+      }
+    },
+    {
+      "id": "aaaa0013",
+      "name": "Confirmar Baja",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1640, 480],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kapso.io/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "Bearer PEGAR_KAPSO_API_KEY_AQUI" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ to: $('Parsear Mensaje').first().json.phone, type: 'text', text: { body: '\\u2705 Te dimos de baja de las alertas del *Mundial 2026*.\\n\\nSi cambias de opini\\u00f3n esc\\u00r1benos: *ALTA Mundial 2026* \\u26bd\\n\\n\\u00a1Hasta pronto! \\ud83d\\udc4b' } }) }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "aaaa0014",
+      "name": "Ignorar Mensaje",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [1160, 660],
+      "parameters": {}
+    }
+  ],
+  "connections": {
+    "Kapso Webhook": {
+      "main": [
+        [{ "node": "Parsear Mensaje", "type": "main", "index": 0 }]
+      ]
+    },
+    "Parsear Mensaje": {
+      "main": [
+        [{ "node": "¿Es ALTA?", "type": "main", "index": 0 }]
+      ]
+    },
+    "¿Es ALTA?": {
+      "main": [
+        [{ "node": "Leer Suscriptores", "type": "main", "index": 0 }],
+        [{ "node": "¿Es STOP?", "type": "main", "index": 0 }]
+      ]
+    },
+    "Leer Suscriptores": {
+      "main": [
+        [{ "node": "Verificar Si Existe", "type": "main", "index": 0 }]
+      ]
+    },
+    "Verificar Si Existe": {
+      "main": [
+        [{ "node": "¿Ya Suscrito?", "type": "main", "index": 0 }]
+      ]
+    },
+    "¿Ya Suscrito?": {
+      "main": [
+        [{ "node": "Enviar Ya Suscrito", "type": "main", "index": 0 }],
+        [{ "node": "Agregar Suscriptor", "type": "main", "index": 0 }]
+      ]
+    },
+    "Agregar Suscriptor": {
+      "main": [
+        [{ "node": "Enviar Bienvenida", "type": "main", "index": 0 }]
+      ]
+    },
+    "¿Es STOP?": {
+      "main": [
+        [{ "node": "Buscar Suscriptor STOP", "type": "main", "index": 0 }],
+        [{ "node": "Ignorar Mensaje", "type": "main", "index": 0 }]
+      ]
+    },
+    "Buscar Suscriptor STOP": {
+      "main": [
+        [{ "node": "Marcar Inactivo", "type": "main", "index": 0 }]
+      ]
+    },
+    "Marcar Inactivo": {
+      "main": [
+        [{ "node": "Confirmar Baja", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
