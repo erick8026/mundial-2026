@@ -2,7 +2,7 @@
 
 // Número de WhatsApp para las alertas del Mundial
 // Cambiar por el número de Kapso cuando esté configurado
-const WA_NUMBER = '50366814903';
+const WA_NUMBER = '50377420672';
 const WA_TEXT = encodeURIComponent('ALTA Mundial 2026');
 const WA_URL = `https://wa.me/${WA_NUMBER}?text=${WA_TEXT}`;
 

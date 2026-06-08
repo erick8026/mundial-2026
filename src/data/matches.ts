@@ -20,691 +20,713 @@ export const phaseOrder: Record<string, number> = {
   final: 6,
 };
 
-// homeScore / awayScore se actualizan conforme avanza el torneo.
-// Los primeros partidos ya tienen marcador de ejemplo para mostrar el diseño.
+// ─────────────────────────────────────────────────────────────────────────────
+//  FIFA WORLD CUP 2026 — GROUP STAGE — ALL 72 MATCHES
+//  Sources: ESPN, Yahoo Sports, NBC Sports, FIFA.com, Sky Sports (cross-verified)
+//
+//  Groups A–L confirmed from the official draw (Dec 5, 2025, Washington D.C.)
+//  UTC times derived from official ET/local kick-off times:
+//    EDT (ET) = UTC−4 → +4 h
+//    CDT (Central/Mexico City/Guadalajara/Monterrey) = UTC−5 → +5 h
+//    PDT (LA/Santa Clara/Seattle/Vancouver) = UTC−7 → +7 h
+// ─────────────────────────────────────────────────────────────────────────────
+
 export const matches: Match[] = [
-  // ══════════════════════════════════
-  //  GRUPO A  (México, Uruguay, Alemania, Ecuador)
-  // ══════════════════════════════════
+
+  // ══════════════════════════════════════════════════════════════════════
+  //  GRUPO A — México, Corea del Sur, Chequia, Sudáfrica
+  // ══════════════════════════════════════════════════════════════════════
   {
     id: 'GA1', phase: 'group', group: 'A', matchNumber: 1,
-    homeTeam: 'México', awayTeam: 'Ecuador',
-    homeFlag: 'mx', awayFlag: 'ec',
+    homeTeam: 'México', awayTeam: 'Sudáfrica',
+    homeFlag: 'mx', awayFlag: 'za',
     venue: 'Estadio Azteca', city: 'Ciudad de México', country: 'Mexico',
-    utcDate: '2026-06-11T23:00:00Z',
+    // Jun 11, 3:00 PM ET (EDT UTC-4) → 19:00 UTC
+    utcDate: '2026-06-11T19:00:00Z',
     status: 'upcoming',
   },
   {
     id: 'GA2', phase: 'group', group: 'A', matchNumber: 2,
-    homeTeam: 'Uruguay', awayTeam: 'Alemania',
-    homeFlag: 'uy', awayFlag: 'de',
-    venue: 'SoFi Stadium', city: 'Los Ángeles', country: 'USA',
+    homeTeam: 'Corea del Sur', awayTeam: 'Chequia',
+    homeFlag: 'kr', awayFlag: 'cz',
+    venue: 'Estadio Akron', city: 'Guadalajara', country: 'Mexico',
+    // Jun 11, 10:00 PM ET (EDT UTC-4) → Jun 12 02:00 UTC
     utcDate: '2026-06-12T02:00:00Z',
     status: 'upcoming',
   },
   {
-    id: 'GA3', phase: 'group', group: 'A', matchNumber: 17,
-    homeTeam: 'Alemania', awayTeam: 'México',
-    homeFlag: 'de', awayFlag: 'mx',
-    venue: 'MetLife Stadium', city: 'New Jersey', country: 'USA',
-    utcDate: '2026-06-16T22:00:00Z',
+    id: 'GA3', phase: 'group', group: 'A', matchNumber: 25,
+    homeTeam: 'Chequia', awayTeam: 'Sudáfrica',
+    homeFlag: 'cz', awayFlag: 'za',
+    venue: 'Mercedes-Benz Stadium', city: 'Atlanta', country: 'USA',
+    // Jun 18, 12:00 PM ET → 16:00 UTC
+    utcDate: '2026-06-18T16:00:00Z',
     status: 'upcoming',
   },
   {
-    id: 'GA4', phase: 'group', group: 'A', matchNumber: 18,
-    homeTeam: 'Ecuador', awayTeam: 'Uruguay',
-    homeFlag: 'ec', awayFlag: 'uy',
-    venue: 'AT&T Stadium', city: 'Dallas', country: 'USA',
-    utcDate: '2026-06-16T19:00:00Z',
-    status: 'upcoming',
-  },
-  {
-    id: 'GA5', phase: 'group', group: 'A', matchNumber: 33,
-    homeTeam: 'Ecuador', awayTeam: 'Alemania',
-    homeFlag: 'ec', awayFlag: 'de',
-    venue: 'Hard Rock Stadium', city: 'Miami', country: 'USA',
-    utcDate: '2026-06-21T22:00:00Z',
-    status: 'upcoming',
-  },
-  {
-    id: 'GA6', phase: 'group', group: 'A', matchNumber: 34,
-    homeTeam: 'Uruguay', awayTeam: 'México',
-    homeFlag: 'uy', awayFlag: 'mx',
-    venue: 'Estadio Azteca', city: 'Ciudad de México', country: 'Mexico',
-    utcDate: '2026-06-21T22:00:00Z',
-    status: 'upcoming',
-  },
-
-  // ══════════════════════════════════
-  //  GRUPO B  (España, Portugal, Marruecos, Croacia)
-  // ══════════════════════════════════
-  {
-    id: 'GB1', phase: 'group', group: 'B', matchNumber: 3,
-    homeTeam: 'España', awayTeam: 'Marruecos',
-    homeFlag: 'es', awayFlag: 'ma',
-    venue: 'MetLife Stadium', city: 'New Jersey', country: 'USA',
-    utcDate: '2026-06-12T00:00:00Z',
-    status: 'upcoming',
-  },
-  {
-    id: 'GB2', phase: 'group', group: 'B', matchNumber: 4,
-    homeTeam: 'Portugal', awayTeam: 'Croacia',
-    homeFlag: 'pt', awayFlag: 'hr',
-    venue: "Levi's Stadium", city: 'San Francisco', country: 'USA',
-    utcDate: '2026-06-12T23:00:00Z',
-    status: 'upcoming',
-  },
-  {
-    id: 'GB3', phase: 'group', group: 'B', matchNumber: 19,
-    homeTeam: 'Marruecos', awayTeam: 'Portugal',
-    homeFlag: 'ma', awayFlag: 'pt',
-    venue: 'AT&T Stadium', city: 'Dallas', country: 'USA',
-    utcDate: '2026-06-17T19:00:00Z',
-    status: 'upcoming',
-  },
-  {
-    id: 'GB4', phase: 'group', group: 'B', matchNumber: 20,
-    homeTeam: 'Croacia', awayTeam: 'España',
-    homeFlag: 'hr', awayFlag: 'es',
-    venue: 'Hard Rock Stadium', city: 'Miami', country: 'USA',
-    utcDate: '2026-06-17T22:00:00Z',
-    status: 'upcoming',
-  },
-  {
-    id: 'GB5', phase: 'group', group: 'B', matchNumber: 35,
-    homeTeam: 'Croacia', awayTeam: 'Marruecos',
-    homeFlag: 'hr', awayFlag: 'ma',
-    venue: 'Estadio BBVA', city: 'Monterrey', country: 'Mexico',
-    utcDate: '2026-06-22T22:00:00Z',
-    status: 'upcoming',
-  },
-  {
-    id: 'GB6', phase: 'group', group: 'B', matchNumber: 36,
-    homeTeam: 'España', awayTeam: 'Portugal',
-    homeFlag: 'es', awayFlag: 'pt',
-    venue: 'SoFi Stadium', city: 'Los Ángeles', country: 'USA',
-    utcDate: '2026-06-22T22:00:00Z',
-    status: 'upcoming',
-  },
-
-  // ══════════════════════════════════
-  //  GRUPO C  (Argentina, Canadá, Chile, Perú)
-  // ══════════════════════════════════
-  {
-    id: 'GC1', phase: 'group', group: 'C', matchNumber: 5,
-    homeTeam: 'Argentina', awayTeam: 'Canadá',
-    homeFlag: 'ar', awayFlag: 'ca',
-    venue: 'MetLife Stadium', city: 'New Jersey', country: 'USA',
-    utcDate: '2026-06-13T02:00:00Z',
-    status: 'upcoming',
-  },
-  {
-    id: 'GC2', phase: 'group', group: 'C', matchNumber: 6,
-    homeTeam: 'Chile', awayTeam: 'Perú',
-    homeFlag: 'cl', awayFlag: 'pe',
-    venue: 'AT&T Stadium', city: 'Dallas', country: 'USA',
-    utcDate: '2026-06-13T19:00:00Z',
-    status: 'upcoming',
-  },
-  {
-    id: 'GC3', phase: 'group', group: 'C', matchNumber: 21,
-    homeTeam: 'Canadá', awayTeam: 'Chile',
-    homeFlag: 'ca', awayFlag: 'cl',
-    venue: 'BC Place', city: 'Vancouver', country: 'Canada',
-    utcDate: '2026-06-18T19:00:00Z',
-    status: 'upcoming',
-  },
-  {
-    id: 'GC4', phase: 'group', group: 'C', matchNumber: 22,
-    homeTeam: 'Perú', awayTeam: 'Argentina',
-    homeFlag: 'pe', awayFlag: 'ar',
-    venue: 'Hard Rock Stadium', city: 'Miami', country: 'USA',
-    utcDate: '2026-06-18T22:00:00Z',
-    status: 'upcoming',
-  },
-  {
-    id: 'GC5', phase: 'group', group: 'C', matchNumber: 37,
-    homeTeam: 'Perú', awayTeam: 'Canadá',
-    homeFlag: 'pe', awayFlag: 'ca',
+    id: 'GA4', phase: 'group', group: 'A', matchNumber: 28,
+    homeTeam: 'México', awayTeam: 'Corea del Sur',
+    homeFlag: 'mx', awayFlag: 'kr',
     venue: 'Estadio Akron', city: 'Guadalajara', country: 'Mexico',
-    utcDate: '2026-06-23T22:00:00Z',
-    status: 'upcoming',
-  },
-  {
-    id: 'GC6', phase: 'group', group: 'C', matchNumber: 38,
-    homeTeam: 'Argentina', awayTeam: 'Chile',
-    homeFlag: 'ar', awayFlag: 'cl',
-    venue: 'MetLife Stadium', city: 'New Jersey', country: 'USA',
-    utcDate: '2026-06-23T22:00:00Z',
-    status: 'upcoming',
-  },
-
-  // ══════════════════════════════════
-  //  GRUPO D  (Francia, Bélgica, Senegal, Argelia)
-  // ══════════════════════════════════
-  {
-    id: 'GD1', phase: 'group', group: 'D', matchNumber: 7,
-    homeTeam: 'Francia', awayTeam: 'Argelia',
-    homeFlag: 'fr', awayFlag: 'dz',
-    venue: "Levi's Stadium", city: 'San Francisco', country: 'USA',
-    utcDate: '2026-06-13T22:00:00Z',
-    status: 'upcoming',
-  },
-  {
-    id: 'GD2', phase: 'group', group: 'D', matchNumber: 8,
-    homeTeam: 'Bélgica', awayTeam: 'Senegal',
-    homeFlag: 'be', awayFlag: 'sn',
-    venue: 'BMO Field', city: 'Toronto', country: 'Canada',
-    utcDate: '2026-06-14T23:00:00Z',
-    status: 'upcoming',
-  },
-  {
-    id: 'GD3', phase: 'group', group: 'D', matchNumber: 23,
-    homeTeam: 'Argelia', awayTeam: 'Bélgica',
-    homeFlag: 'dz', awayFlag: 'be',
-    venue: 'Gillette Stadium', city: 'Boston', country: 'USA',
-    utcDate: '2026-06-19T19:00:00Z',
-    status: 'upcoming',
-  },
-  {
-    id: 'GD4', phase: 'group', group: 'D', matchNumber: 24,
-    homeTeam: 'Senegal', awayTeam: 'Francia',
-    homeFlag: 'sn', awayFlag: 'fr',
-    venue: 'SoFi Stadium', city: 'Los Ángeles', country: 'USA',
-    utcDate: '2026-06-19T22:00:00Z',
-    status: 'upcoming',
-  },
-  {
-    id: 'GD5', phase: 'group', group: 'D', matchNumber: 39,
-    homeTeam: 'Senegal', awayTeam: 'Argelia',
-    homeFlag: 'sn', awayFlag: 'dz',
-    venue: 'AT&T Stadium', city: 'Dallas', country: 'USA',
-    utcDate: '2026-06-24T22:00:00Z',
-    status: 'upcoming',
-  },
-  {
-    id: 'GD6', phase: 'group', group: 'D', matchNumber: 40,
-    homeTeam: 'Bélgica', awayTeam: 'Francia',
-    homeFlag: 'be', awayFlag: 'fr',
-    venue: "Levi's Stadium", city: 'San Francisco', country: 'USA',
-    utcDate: '2026-06-24T22:00:00Z',
-    status: 'upcoming',
-  },
-
-  // ══════════════════════════════════
-  //  GRUPO E  (Brasil, Países Bajos, Colombia, Paraguay)
-  // ══════════════════════════════════
-  {
-    id: 'GE1', phase: 'group', group: 'E', matchNumber: 9,
-    homeTeam: 'Brasil', awayTeam: 'Paraguay',
-    homeFlag: 'br', awayFlag: 'py',
-    venue: 'MetLife Stadium', city: 'New Jersey', country: 'USA',
-    utcDate: '2026-06-14T18:00:00Z',
-    status: 'upcoming',
-  },
-  {
-    id: 'GE2', phase: 'group', group: 'E', matchNumber: 10,
-    homeTeam: 'Países Bajos', awayTeam: 'Colombia',
-    homeFlag: 'nl', awayFlag: 'co',
-    venue: 'Hard Rock Stadium', city: 'Miami', country: 'USA',
-    utcDate: '2026-06-14T21:00:00Z',
-    status: 'upcoming',
-  },
-  {
-    id: 'GE3', phase: 'group', group: 'E', matchNumber: 25,
-    homeTeam: 'Colombia', awayTeam: 'Brasil',
-    homeFlag: 'co', awayFlag: 'br',
-    venue: 'AT&T Stadium', city: 'Dallas', country: 'USA',
+    // Jun 18, 9:00 PM ET → Jun 19 01:00 UTC
     utcDate: '2026-06-19T01:00:00Z',
     status: 'upcoming',
   },
   {
-    id: 'GE4', phase: 'group', group: 'E', matchNumber: 26,
-    homeTeam: 'Paraguay', awayTeam: 'Países Bajos',
-    homeFlag: 'py', awayFlag: 'nl',
-    venue: 'SoFi Stadium', city: 'Los Ángeles', country: 'USA',
-    utcDate: '2026-06-20T02:00:00Z',
-    status: 'upcoming',
-  },
-  {
-    id: 'GE5', phase: 'group', group: 'E', matchNumber: 41,
-    homeTeam: 'Paraguay', awayTeam: 'Colombia',
-    homeFlag: 'py', awayFlag: 'co',
-    venue: 'Estadio BBVA', city: 'Monterrey', country: 'Mexico',
-    utcDate: '2026-06-25T22:00:00Z',
-    status: 'upcoming',
-  },
-  {
-    id: 'GE6', phase: 'group', group: 'E', matchNumber: 42,
-    homeTeam: 'Brasil', awayTeam: 'Países Bajos',
-    homeFlag: 'br', awayFlag: 'nl',
-    venue: 'MetLife Stadium', city: 'New Jersey', country: 'USA',
-    utcDate: '2026-06-25T22:00:00Z',
-    status: 'upcoming',
-  },
-
-  // ══════════════════════════════════
-  //  GRUPO F  (Inglaterra, Nigeria, Australia, Arabia Saudita)
-  // ══════════════════════════════════
-  {
-    id: 'GF1', phase: 'group', group: 'F', matchNumber: 11,
-    homeTeam: 'Inglaterra', awayTeam: 'Nigeria',
-    homeFlag: 'gb-eng', awayFlag: 'ng',
-    venue: 'SoFi Stadium', city: 'Los Ángeles', country: 'USA',
-    utcDate: '2026-06-15T01:00:00Z',
-    status: 'upcoming',
-  },
-  {
-    id: 'GF2', phase: 'group', group: 'F', matchNumber: 12,
-    homeTeam: 'Australia', awayTeam: 'Arabia Saudita',
-    homeFlag: 'au', awayFlag: 'sa',
-    venue: 'Estadio Akron', city: 'Guadalajara', country: 'Mexico',
-    utcDate: '2026-06-15T19:00:00Z',
-    status: 'upcoming',
-  },
-  {
-    id: 'GF3', phase: 'group', group: 'F', matchNumber: 27,
-    homeTeam: 'Nigeria', awayTeam: 'Australia',
-    homeFlag: 'ng', awayFlag: 'au',
-    venue: 'Gillette Stadium', city: 'Boston', country: 'USA',
-    utcDate: '2026-06-20T19:00:00Z',
-    status: 'upcoming',
-  },
-  {
-    id: 'GF4', phase: 'group', group: 'F', matchNumber: 28,
-    homeTeam: 'Arabia Saudita', awayTeam: 'Inglaterra',
-    homeFlag: 'sa', awayFlag: 'gb-eng',
-    venue: 'AT&T Stadium', city: 'Dallas', country: 'USA',
-    utcDate: '2026-06-20T22:00:00Z',
-    status: 'upcoming',
-  },
-  {
-    id: 'GF5', phase: 'group', group: 'F', matchNumber: 43,
-    homeTeam: 'Arabia Saudita', awayTeam: 'Nigeria',
-    homeFlag: 'sa', awayFlag: 'ng',
-    venue: "Levi's Stadium", city: 'San Francisco', country: 'USA',
-    utcDate: '2026-06-26T02:00:00Z',
-    status: 'upcoming',
-  },
-  {
-    id: 'GF6', phase: 'group', group: 'F', matchNumber: 44,
-    homeTeam: 'Australia', awayTeam: 'Inglaterra',
-    homeFlag: 'au', awayFlag: 'gb-eng',
-    venue: 'Hard Rock Stadium', city: 'Miami', country: 'USA',
-    utcDate: '2026-06-26T02:00:00Z',
-    status: 'upcoming',
-  },
-
-  // ══════════════════════════════════
-  //  GRUPO G  (Estados Unidos, Japón, Costa de Marfil, Bolivia)
-  // ══════════════════════════════════
-  {
-    id: 'GG1', phase: 'group', group: 'G', matchNumber: 13,
-    homeTeam: 'Estados Unidos', awayTeam: 'Bolivia',
-    homeFlag: 'us', awayFlag: 'bo',
-    venue: 'SoFi Stadium', city: 'Los Ángeles', country: 'USA',
-    utcDate: '2026-06-15T22:00:00Z',
-    status: 'upcoming',
-  },
-  {
-    id: 'GG2', phase: 'group', group: 'G', matchNumber: 14,
-    homeTeam: 'Japón', awayTeam: 'C. de Marfil',
-    homeFlag: 'jp', awayFlag: 'ci',
-    venue: 'MetLife Stadium', city: 'New Jersey', country: 'USA',
-    utcDate: '2026-06-16T01:00:00Z',
-    status: 'upcoming',
-  },
-  {
-    id: 'GG3', phase: 'group', group: 'G', matchNumber: 29,
-    homeTeam: 'Bolivia', awayTeam: 'Japón',
-    homeFlag: 'bo', awayFlag: 'jp',
+    id: 'GA5', phase: 'group', group: 'A', matchNumber: 53,
+    homeTeam: 'Chequia', awayTeam: 'México',
+    homeFlag: 'cz', awayFlag: 'mx',
     venue: 'Estadio Azteca', city: 'Ciudad de México', country: 'Mexico',
-    utcDate: '2026-06-21T19:00:00Z',
+    // Jun 24, 9:00 PM ET → Jun 25 01:00 UTC
+    utcDate: '2026-06-25T01:00:00Z',
     status: 'upcoming',
   },
   {
-    id: 'GG4', phase: 'group', group: 'G', matchNumber: 30,
-    homeTeam: 'C. de Marfil', awayTeam: 'Estados Unidos',
-    homeFlag: 'ci', awayFlag: 'us',
-    venue: 'AT&T Stadium', city: 'Dallas', country: 'USA',
-    utcDate: '2026-06-21T02:00:00Z',
-    status: 'upcoming',
-  },
-  {
-    id: 'GG5', phase: 'group', group: 'G', matchNumber: 45,
-    homeTeam: 'Bolivia', awayTeam: 'C. de Marfil',
-    homeFlag: 'bo', awayFlag: 'ci',
-    venue: 'BC Place', city: 'Vancouver', country: 'Canada',
-    utcDate: '2026-06-26T22:00:00Z',
-    status: 'upcoming',
-  },
-  {
-    id: 'GG6', phase: 'group', group: 'G', matchNumber: 46,
-    homeTeam: 'Japón', awayTeam: 'Estados Unidos',
-    homeFlag: 'jp', awayFlag: 'us',
-    venue: "Levi's Stadium", city: 'San Francisco', country: 'USA',
-    utcDate: '2026-06-26T22:00:00Z',
-    status: 'upcoming',
-  },
-
-  // ══════════════════════════════════
-  //  GRUPO H  (Italia, Corea del Sur, Ghana, Ecuador)
-  // ══════════════════════════════════
-  {
-    id: 'GH1', phase: 'group', group: 'H', matchNumber: 15,
-    homeTeam: 'Italia', awayTeam: 'Ghana',
-    homeFlag: 'it', awayFlag: 'gh',
-    venue: 'Gillette Stadium', city: 'Boston', country: 'USA',
-    utcDate: '2026-06-16T18:00:00Z',
-    status: 'upcoming',
-  },
-  {
-    id: 'GH2', phase: 'group', group: 'H', matchNumber: 16,
-    homeTeam: 'Corea del Sur', awayTeam: 'Ecuador',
-    homeFlag: 'kr', awayFlag: 'ec',
+    id: 'GA6', phase: 'group', group: 'A', matchNumber: 54,
+    homeTeam: 'Sudáfrica', awayTeam: 'Corea del Sur',
+    homeFlag: 'za', awayFlag: 'kr',
     venue: 'Estadio BBVA', city: 'Monterrey', country: 'Mexico',
-    utcDate: '2026-06-17T01:00:00Z',
-    status: 'upcoming',
-  },
-  {
-    id: 'GH3', phase: 'group', group: 'H', matchNumber: 31,
-    homeTeam: 'Ghana', awayTeam: 'Corea del Sur',
-    homeFlag: 'gh', awayFlag: 'kr',
-    venue: 'Hard Rock Stadium', city: 'Miami', country: 'USA',
-    utcDate: '2026-06-22T02:00:00Z',
-    status: 'upcoming',
-  },
-  {
-    id: 'GH4', phase: 'group', group: 'H', matchNumber: 32,
-    homeTeam: 'Ecuador', awayTeam: 'Italia',
-    homeFlag: 'ec', awayFlag: 'it',
-    venue: 'SoFi Stadium', city: 'Los Ángeles', country: 'USA',
-    utcDate: '2026-06-22T19:00:00Z',
-    status: 'upcoming',
-  },
-  {
-    id: 'GH5', phase: 'group', group: 'H', matchNumber: 47,
-    homeTeam: 'Ghana', awayTeam: 'Ecuador',
-    homeFlag: 'gh', awayFlag: 'ec',
-    venue: 'AT&T Stadium', city: 'Dallas', country: 'USA',
-    utcDate: '2026-06-27T22:00:00Z',
-    status: 'upcoming',
-  },
-  {
-    id: 'GH6', phase: 'group', group: 'H', matchNumber: 48,
-    homeTeam: 'Italia', awayTeam: 'Corea del Sur',
-    homeFlag: 'it', awayFlag: 'kr',
-    venue: 'MetLife Stadium', city: 'New Jersey', country: 'USA',
-    utcDate: '2026-06-27T22:00:00Z',
+    // Jun 24, 9:00 PM ET → Jun 25 01:00 UTC
+    utcDate: '2026-06-25T01:00:00Z',
     status: 'upcoming',
   },
 
-  // ══════════════════════════════════
-  //  GRUPO I  (Serbia, Polonia, y 2 clasificados)
-  // ══════════════════════════════════
+  // ══════════════════════════════════════════════════════════════════════
+  //  GRUPO B — Canadá, Bosnia y Herzegovina, Qatar, Suiza
+  // ══════════════════════════════════════════════════════════════════════
   {
-    id: 'GI1', phase: 'group', group: 'I', matchNumber: 49,
-    homeTeam: 'Serbia', awayTeam: 'Polonia',
-    homeFlag: 'rs', awayFlag: 'pl',
-    venue: 'Estadio Akron', city: 'Guadalajara', country: 'Mexico',
-    utcDate: '2026-06-13T01:00:00Z',
+    id: 'GB1', phase: 'group', group: 'B', matchNumber: 3,
+    homeTeam: 'Canadá', awayTeam: 'Bosnia y Herzegovina',
+    homeFlag: 'ca', awayFlag: 'ba',
+    venue: 'BMO Field', city: 'Toronto', country: 'Canada',
+    // Jun 12, 3:00 PM ET → 19:00 UTC
+    utcDate: '2026-06-12T19:00:00Z',
     status: 'upcoming',
   },
   {
-    id: 'GI2', phase: 'group', group: 'I', matchNumber: 50,
-    homeTeam: 'Turquía', awayTeam: 'Suiza',
-    homeFlag: 'tr', awayFlag: 'ch',
-    venue: 'Gillette Stadium', city: 'Boston', country: 'USA',
-    utcDate: '2026-06-13T18:00:00Z',
+    id: 'GB2', phase: 'group', group: 'B', matchNumber: 8,
+    homeTeam: 'Qatar', awayTeam: 'Suiza',
+    homeFlag: 'qa', awayFlag: 'ch',
+    venue: "Levi's Stadium", city: 'Santa Clara', country: 'USA',
+    // Jun 13, 3:00 PM ET → 19:00 UTC
+    utcDate: '2026-06-13T19:00:00Z',
     status: 'upcoming',
   },
   {
-    id: 'GI3', phase: 'group', group: 'I', matchNumber: 51,
-    homeTeam: 'Polonia', awayTeam: 'Turquía',
-    homeFlag: 'pl', awayFlag: 'tr',
-    venue: 'MetLife Stadium', city: 'New Jersey', country: 'USA',
-    utcDate: '2026-06-18T01:00:00Z',
-    status: 'upcoming',
-  },
-  {
-    id: 'GI4', phase: 'group', group: 'I', matchNumber: 52,
-    homeTeam: 'Suiza', awayTeam: 'Serbia',
-    homeFlag: 'ch', awayFlag: 'rs',
-    venue: 'Hard Rock Stadium', city: 'Miami', country: 'USA',
+    id: 'GB3', phase: 'group', group: 'B', matchNumber: 26,
+    homeTeam: 'Suiza', awayTeam: 'Bosnia y Herzegovina',
+    homeFlag: 'ch', awayFlag: 'ba',
+    venue: 'SoFi Stadium', city: 'Los Ángeles', country: 'USA',
+    // Jun 18, 3:00 PM ET → 19:00 UTC
     utcDate: '2026-06-18T19:00:00Z',
     status: 'upcoming',
   },
   {
-    id: 'GI5', phase: 'group', group: 'I', matchNumber: 53,
-    homeTeam: 'Suiza', awayTeam: 'Polonia',
-    homeFlag: 'ch', awayFlag: 'pl',
-    venue: 'Estadio Azteca', city: 'Ciudad de México', country: 'Mexico',
-    utcDate: '2026-06-23T02:00:00Z',
+    id: 'GB4', phase: 'group', group: 'B', matchNumber: 27,
+    homeTeam: 'Canadá', awayTeam: 'Qatar',
+    homeFlag: 'ca', awayFlag: 'qa',
+    venue: 'BC Place', city: 'Vancouver', country: 'Canada',
+    // Jun 18, 6:00 PM ET → 22:00 UTC
+    utcDate: '2026-06-18T22:00:00Z',
     status: 'upcoming',
   },
   {
-    id: 'GI6', phase: 'group', group: 'I', matchNumber: 54,
-    homeTeam: 'Serbia', awayTeam: 'Turquía',
-    homeFlag: 'rs', awayFlag: 'tr',
-    venue: 'AT&T Stadium', city: 'Dallas', country: 'USA',
-    utcDate: '2026-06-23T02:00:00Z',
+    id: 'GB5', phase: 'group', group: 'B', matchNumber: 51,
+    homeTeam: 'Suiza', awayTeam: 'Canadá',
+    homeFlag: 'ch', awayFlag: 'ca',
+    venue: 'BC Place', city: 'Vancouver', country: 'Canada',
+    // Jun 24, 3:00 PM ET → 19:00 UTC
+    utcDate: '2026-06-24T19:00:00Z',
+    status: 'upcoming',
+  },
+  {
+    id: 'GB6', phase: 'group', group: 'B', matchNumber: 52,
+    homeTeam: 'Bosnia y Herzegovina', awayTeam: 'Qatar',
+    homeFlag: 'ba', awayFlag: 'qa',
+    venue: 'Lumen Field', city: 'Seattle', country: 'USA',
+    // Jun 24, 3:00 PM ET → 19:00 UTC
+    utcDate: '2026-06-24T19:00:00Z',
     status: 'upcoming',
   },
 
-  // ══════════════════════════════════
-  //  GRUPO J  (Portugal 2 equipos más — ajustar al sorteo real)
-  // ══════════════════════════════════
+  // ══════════════════════════════════════════════════════════════════════
+  //  GRUPO C — Brasil, Marruecos, Haití, Escocia
+  // ══════════════════════════════════════════════════════════════════════
   {
-    id: 'GJ1', phase: 'group', group: 'J', matchNumber: 55,
-    homeTeam: 'Países Bajos', awayTeam: 'Rumania',
-    homeFlag: 'nl', awayFlag: 'ro',
-    venue: "Levi's Stadium", city: 'San Francisco', country: 'USA',
+    id: 'GC1', phase: 'group', group: 'C', matchNumber: 7,
+    homeTeam: 'Brasil', awayTeam: 'Marruecos',
+    homeFlag: 'br', awayFlag: 'ma',
+    venue: 'MetLife Stadium', city: 'East Rutherford', country: 'USA',
+    // Jun 13, 6:00 PM ET → 22:00 UTC
+    utcDate: '2026-06-13T22:00:00Z',
+    status: 'upcoming',
+  },
+  {
+    id: 'GC2', phase: 'group', group: 'C', matchNumber: 5,
+    homeTeam: 'Haití', awayTeam: 'Escocia',
+    homeFlag: 'ht', awayFlag: 'gb-sct',
+    venue: 'Gillette Stadium', city: 'Foxborough', country: 'USA',
+    // Jun 13, 9:00 PM ET → Jun 14 01:00 UTC
     utcDate: '2026-06-14T01:00:00Z',
     status: 'upcoming',
   },
   {
-    id: 'GJ2', phase: 'group', group: 'J', matchNumber: 56,
-    homeTeam: 'Ucrania', awayTeam: 'Hungría',
-    homeFlag: 'ua', awayFlag: 'hu',
-    venue: 'BMO Field', city: 'Toronto', country: 'Canada',
-    utcDate: '2026-06-14T19:00:00Z',
+    id: 'GC3', phase: 'group', group: 'C', matchNumber: 30,
+    homeTeam: 'Escocia', awayTeam: 'Marruecos',
+    homeFlag: 'gb-sct', awayFlag: 'ma',
+    venue: 'Gillette Stadium', city: 'Foxborough', country: 'USA',
+    // Jun 19, 6:00 PM ET → 22:00 UTC
+    utcDate: '2026-06-19T22:00:00Z',
     status: 'upcoming',
   },
   {
-    id: 'GJ3', phase: 'group', group: 'J', matchNumber: 57,
-    homeTeam: 'Rumania', awayTeam: 'Ucrania',
-    homeFlag: 'ro', awayFlag: 'ua',
-    venue: 'Estadio BBVA', city: 'Monterrey', country: 'Mexico',
-    utcDate: '2026-06-19T02:00:00Z',
+    id: 'GC4', phase: 'group', group: 'C', matchNumber: 31,
+    homeTeam: 'Brasil', awayTeam: 'Haití',
+    homeFlag: 'br', awayFlag: 'ht',
+    venue: 'Lincoln Financial Field', city: 'Filadelfia', country: 'USA',
+    // Jun 19, 8:30 PM ET → Jun 20 00:30 UTC
+    utcDate: '2026-06-20T00:30:00Z',
     status: 'upcoming',
   },
   {
-    id: 'GJ4', phase: 'group', group: 'J', matchNumber: 58,
-    homeTeam: 'Hungría', awayTeam: 'Países Bajos',
-    homeFlag: 'hu', awayFlag: 'nl',
-    venue: 'MetLife Stadium', city: 'New Jersey', country: 'USA',
+    id: 'GC5', phase: 'group', group: 'C', matchNumber: 49,
+    homeTeam: 'Escocia', awayTeam: 'Brasil',
+    homeFlag: 'gb-sct', awayFlag: 'br',
+    venue: 'Hard Rock Stadium', city: 'Miami Gardens', country: 'USA',
+    // Jun 24, 6:00 PM ET → 22:00 UTC
+    utcDate: '2026-06-24T22:00:00Z',
+    status: 'upcoming',
+  },
+  {
+    id: 'GC6', phase: 'group', group: 'C', matchNumber: 50,
+    homeTeam: 'Marruecos', awayTeam: 'Haití',
+    homeFlag: 'ma', awayFlag: 'ht',
+    venue: 'Mercedes-Benz Stadium', city: 'Atlanta', country: 'USA',
+    // Jun 24, 6:00 PM ET → 22:00 UTC
+    utcDate: '2026-06-24T22:00:00Z',
+    status: 'upcoming',
+  },
+
+  // ══════════════════════════════════════════════════════════════════════
+  //  GRUPO D — Estados Unidos, Paraguay, Australia, Türkiye
+  // ══════════════════════════════════════════════════════════════════════
+  {
+    id: 'GD1', phase: 'group', group: 'D', matchNumber: 4,
+    homeTeam: 'Estados Unidos', awayTeam: 'Paraguay',
+    homeFlag: 'us', awayFlag: 'py',
+    venue: 'SoFi Stadium', city: 'Los Ángeles', country: 'USA',
+    // Jun 12, 9:00 PM ET → Jun 13 01:00 UTC
+    utcDate: '2026-06-13T01:00:00Z',
+    status: 'upcoming',
+  },
+  {
+    id: 'GD2', phase: 'group', group: 'D', matchNumber: 6,
+    homeTeam: 'Australia', awayTeam: 'Türkiye',
+    homeFlag: 'au', awayFlag: 'tr',
+    venue: 'BC Place', city: 'Vancouver', country: 'Canada',
+    // Jun 13, 12:00 AM ET (Jun 14 local) → Jun 14 04:00 UTC
+    utcDate: '2026-06-14T04:00:00Z',
+    status: 'upcoming',
+  },
+  {
+    id: 'GD3', phase: 'group', group: 'D', matchNumber: 32,
+    homeTeam: 'Estados Unidos', awayTeam: 'Australia',
+    homeFlag: 'us', awayFlag: 'au',
+    venue: 'Lumen Field', city: 'Seattle', country: 'USA',
+    // Jun 19, 3:00 PM ET → 19:00 UTC
     utcDate: '2026-06-19T19:00:00Z',
     status: 'upcoming',
   },
   {
-    id: 'GJ5', phase: 'group', group: 'J', matchNumber: 59,
-    homeTeam: 'Hungría', awayTeam: 'Rumania',
-    homeFlag: 'hu', awayFlag: 'ro',
-    venue: 'Gillette Stadium', city: 'Boston', country: 'USA',
-    utcDate: '2026-06-24T02:00:00Z',
+    id: 'GD4', phase: 'group', group: 'D', matchNumber: 29,
+    homeTeam: 'Türkiye', awayTeam: 'Paraguay',
+    homeFlag: 'tr', awayFlag: 'py',
+    venue: "Levi's Stadium", city: 'Santa Clara', country: 'USA',
+    // Jun 19, 11:00 PM ET → Jun 20 03:00 UTC
+    utcDate: '2026-06-20T03:00:00Z',
     status: 'upcoming',
   },
   {
-    id: 'GJ6', phase: 'group', group: 'J', matchNumber: 60,
-    homeTeam: 'Ucrania', awayTeam: 'Países Bajos',
-    homeFlag: 'ua', awayFlag: 'nl',
-    venue: 'AT&T Stadium', city: 'Dallas', country: 'USA',
-    utcDate: '2026-06-24T02:00:00Z',
+    id: 'GD5', phase: 'group', group: 'D', matchNumber: 59,
+    homeTeam: 'Türkiye', awayTeam: 'Estados Unidos',
+    homeFlag: 'tr', awayFlag: 'us',
+    venue: 'SoFi Stadium', city: 'Los Ángeles', country: 'USA',
+    // Jun 25, 10:00 PM ET → Jun 26 02:00 UTC
+    utcDate: '2026-06-26T02:00:00Z',
+    status: 'upcoming',
+  },
+  {
+    id: 'GD6', phase: 'group', group: 'D', matchNumber: 60,
+    homeTeam: 'Paraguay', awayTeam: 'Australia',
+    homeFlag: 'py', awayFlag: 'au',
+    venue: "Levi's Stadium", city: 'Santa Clara', country: 'USA',
+    // Jun 25, 10:00 PM ET → Jun 26 02:00 UTC
+    utcDate: '2026-06-26T02:00:00Z',
     status: 'upcoming',
   },
 
-  // ══════════════════════════════════
-  //  GRUPO K
-  // ══════════════════════════════════
+  // ══════════════════════════════════════════════════════════════════════
+  //  GRUPO E — Alemania, Curazao, Costa de Marfil, Ecuador
+  // ══════════════════════════════════════════════════════════════════════
   {
-    id: 'GK1', phase: 'group', group: 'K', matchNumber: 61,
-    homeTeam: 'Irán', awayTeam: 'Camerún',
-    homeFlag: 'ir', awayFlag: 'cm',
-    venue: 'BC Place', city: 'Vancouver', country: 'Canada',
+    id: 'GE1', phase: 'group', group: 'E', matchNumber: 10,
+    homeTeam: 'Alemania', awayTeam: 'Curazao',
+    homeFlag: 'de', awayFlag: 'cw',
+    venue: 'NRG Stadium', city: 'Houston', country: 'USA',
+    // Jun 14, 1:00 PM ET → 17:00 UTC
+    utcDate: '2026-06-14T17:00:00Z',
+    status: 'upcoming',
+  },
+  {
+    id: 'GE2', phase: 'group', group: 'E', matchNumber: 9,
+    homeTeam: 'Costa de Marfil', awayTeam: 'Ecuador',
+    homeFlag: 'ci', awayFlag: 'ec',
+    venue: 'Lincoln Financial Field', city: 'Filadelfia', country: 'USA',
+    // Jun 14, 7:00 PM ET → 23:00 UTC
+    utcDate: '2026-06-14T23:00:00Z',
+    status: 'upcoming',
+  },
+  {
+    id: 'GE3', phase: 'group', group: 'E', matchNumber: 33,
+    homeTeam: 'Alemania', awayTeam: 'Costa de Marfil',
+    homeFlag: 'de', awayFlag: 'ci',
+    venue: 'BMO Field', city: 'Toronto', country: 'Canada',
+    // Jun 20, 4:00 PM ET → 20:00 UTC
+    utcDate: '2026-06-20T20:00:00Z',
+    status: 'upcoming',
+  },
+  {
+    id: 'GE4', phase: 'group', group: 'E', matchNumber: 34,
+    homeTeam: 'Ecuador', awayTeam: 'Curazao',
+    homeFlag: 'ec', awayFlag: 'cw',
+    venue: 'Arrowhead Stadium', city: 'Kansas City', country: 'USA',
+    // Jun 20, 8:00 PM ET → Jun 21 00:00 UTC
+    utcDate: '2026-06-21T00:00:00Z',
+    status: 'upcoming',
+  },
+  {
+    id: 'GE5', phase: 'group', group: 'E', matchNumber: 55,
+    homeTeam: 'Curazao', awayTeam: 'Costa de Marfil',
+    homeFlag: 'cw', awayFlag: 'ci',
+    venue: 'Lincoln Financial Field', city: 'Filadelfia', country: 'USA',
+    // Jun 25, 4:00 PM ET → 20:00 UTC
+    utcDate: '2026-06-25T20:00:00Z',
+    status: 'upcoming',
+  },
+  {
+    id: 'GE6', phase: 'group', group: 'E', matchNumber: 56,
+    homeTeam: 'Ecuador', awayTeam: 'Alemania',
+    homeFlag: 'ec', awayFlag: 'de',
+    venue: 'MetLife Stadium', city: 'East Rutherford', country: 'USA',
+    // Jun 25, 4:00 PM ET → 20:00 UTC
+    utcDate: '2026-06-25T20:00:00Z',
+    status: 'upcoming',
+  },
+
+  // ══════════════════════════════════════════════════════════════════════
+  //  GRUPO F — Países Bajos, Japón, Suecia, Túnez
+  // ══════════════════════════════════════════════════════════════════════
+  {
+    id: 'GF1', phase: 'group', group: 'F', matchNumber: 11,
+    homeTeam: 'Países Bajos', awayTeam: 'Japón',
+    homeFlag: 'nl', awayFlag: 'jp',
+    venue: 'AT&T Stadium', city: 'Arlington', country: 'USA',
+    // Jun 14, 4:00 PM ET → 20:00 UTC
+    utcDate: '2026-06-14T20:00:00Z',
+    status: 'upcoming',
+  },
+  {
+    id: 'GF2', phase: 'group', group: 'F', matchNumber: 12,
+    homeTeam: 'Suecia', awayTeam: 'Túnez',
+    homeFlag: 'se', awayFlag: 'tn',
+    venue: 'Estadio BBVA', city: 'Monterrey', country: 'Mexico',
+    // Jun 14, 10:00 PM ET → Jun 15 02:00 UTC
     utcDate: '2026-06-15T02:00:00Z',
     status: 'upcoming',
   },
   {
-    id: 'GK2', phase: 'group', group: 'K', matchNumber: 62,
-    homeTeam: 'Dinamarca', awayTeam: 'Nueva Zelanda',
-    homeFlag: 'dk', awayFlag: 'nz',
-    venue: 'SoFi Stadium', city: 'Los Ángeles', country: 'USA',
+    id: 'GF3', phase: 'group', group: 'F', matchNumber: 35,
+    homeTeam: 'Países Bajos', awayTeam: 'Suecia',
+    homeFlag: 'nl', awayFlag: 'se',
+    venue: 'NRG Stadium', city: 'Houston', country: 'USA',
+    // Jun 20, 1:00 PM ET → 17:00 UTC
+    utcDate: '2026-06-20T17:00:00Z',
+    status: 'upcoming',
+  },
+  {
+    id: 'GF4', phase: 'group', group: 'F', matchNumber: 36,
+    homeTeam: 'Túnez', awayTeam: 'Japón',
+    homeFlag: 'tn', awayFlag: 'jp',
+    venue: 'Estadio BBVA', city: 'Monterrey', country: 'Mexico',
+    // Jun 20, 12:00 AM ET (Jun 21 local) → Jun 21 04:00 UTC
+    utcDate: '2026-06-21T04:00:00Z',
+    status: 'upcoming',
+  },
+  {
+    id: 'GF5', phase: 'group', group: 'F', matchNumber: 57,
+    homeTeam: 'Japón', awayTeam: 'Suecia',
+    homeFlag: 'jp', awayFlag: 'se',
+    venue: 'AT&T Stadium', city: 'Arlington', country: 'USA',
+    // Jun 25, 7:00 PM ET → 23:00 UTC
+    utcDate: '2026-06-25T23:00:00Z',
+    status: 'upcoming',
+  },
+  {
+    id: 'GF6', phase: 'group', group: 'F', matchNumber: 58,
+    homeTeam: 'Túnez', awayTeam: 'Países Bajos',
+    homeFlag: 'tn', awayFlag: 'nl',
+    venue: 'Arrowhead Stadium', city: 'Kansas City', country: 'USA',
+    // Jun 25, 7:00 PM ET → 23:00 UTC
+    utcDate: '2026-06-25T23:00:00Z',
+    status: 'upcoming',
+  },
+
+  // ══════════════════════════════════════════════════════════════════════
+  //  GRUPO G — Bélgica, Egipto, Irán, Nueva Zelanda
+  // ══════════════════════════════════════════════════════════════════════
+  {
+    id: 'GG1', phase: 'group', group: 'G', matchNumber: 16,
+    homeTeam: 'Bélgica', awayTeam: 'Egipto',
+    homeFlag: 'be', awayFlag: 'eg',
+    venue: 'Lumen Field', city: 'Seattle', country: 'USA',
+    // Jun 15, 3:00 PM ET → 19:00 UTC
     utcDate: '2026-06-15T19:00:00Z',
     status: 'upcoming',
   },
   {
-    id: 'GK3', phase: 'group', group: 'K', matchNumber: 63,
-    homeTeam: 'Camerún', awayTeam: 'Dinamarca',
-    homeFlag: 'cm', awayFlag: 'dk',
-    venue: 'MetLife Stadium', city: 'New Jersey', country: 'USA',
-    utcDate: '2026-06-20T19:00:00Z',
-    status: 'upcoming',
-  },
-  {
-    id: 'GK4', phase: 'group', group: 'K', matchNumber: 64,
-    homeTeam: 'Nueva Zelanda', awayTeam: 'Irán',
-    homeFlag: 'nz', awayFlag: 'ir',
-    venue: 'Estadio Azteca', city: 'Ciudad de México', country: 'Mexico',
-    utcDate: '2026-06-20T22:00:00Z',
-    status: 'upcoming',
-  },
-  {
-    id: 'GK5', phase: 'group', group: 'K', matchNumber: 65,
-    homeTeam: 'Nueva Zelanda', awayTeam: 'Camerún',
-    homeFlag: 'nz', awayFlag: 'cm',
-    venue: 'BMO Field', city: 'Toronto', country: 'Canada',
-    utcDate: '2026-06-25T02:00:00Z',
-    status: 'upcoming',
-  },
-  {
-    id: 'GK6', phase: 'group', group: 'K', matchNumber: 66,
-    homeTeam: 'Irán', awayTeam: 'Dinamarca',
-    homeFlag: 'ir', awayFlag: 'dk',
-    venue: 'Hard Rock Stadium', city: 'Miami', country: 'USA',
-    utcDate: '2026-06-25T02:00:00Z',
-    status: 'upcoming',
-  },
-
-  // ══════════════════════════════════
-  //  GRUPO L
-  // ══════════════════════════════════
-  {
-    id: 'GL1', phase: 'group', group: 'L', matchNumber: 67,
-    homeTeam: 'Mozambique', awayTeam: 'Venezuela',
-    homeFlag: 'mz', awayFlag: 've',
-    venue: 'Estadio BBVA', city: 'Monterrey', country: 'Mexico',
+    id: 'GG2', phase: 'group', group: 'G', matchNumber: 15,
+    homeTeam: 'Irán', awayTeam: 'Nueva Zelanda',
+    homeFlag: 'ir', awayFlag: 'nz',
+    venue: 'SoFi Stadium', city: 'Los Ángeles', country: 'USA',
+    // Jun 15, 9:00 PM ET → Jun 16 01:00 UTC
     utcDate: '2026-06-16T01:00:00Z',
     status: 'upcoming',
   },
   {
-    id: 'GL2', phase: 'group', group: 'L', matchNumber: 68,
-    homeTeam: 'Escocia', awayTeam: 'Kenia',
-    homeFlag: 'gb-sct', awayFlag: 'ke',
-    venue: 'BC Place', city: 'Vancouver', country: 'Canada',
-    utcDate: '2026-06-16T19:00:00Z',
-    status: 'upcoming',
-  },
-  {
-    id: 'GL3', phase: 'group', group: 'L', matchNumber: 69,
-    homeTeam: 'Venezuela', awayTeam: 'Escocia',
-    homeFlag: 've', awayFlag: 'gb-sct',
-    venue: 'Gillette Stadium', city: 'Boston', country: 'USA',
+    id: 'GG3', phase: 'group', group: 'G', matchNumber: 39,
+    homeTeam: 'Bélgica', awayTeam: 'Irán',
+    homeFlag: 'be', awayFlag: 'ir',
+    venue: 'SoFi Stadium', city: 'Los Ángeles', country: 'USA',
+    // Jun 21, 3:00 PM ET → 19:00 UTC
     utcDate: '2026-06-21T19:00:00Z',
     status: 'upcoming',
   },
   {
-    id: 'GL4', phase: 'group', group: 'L', matchNumber: 70,
-    homeTeam: 'Kenia', awayTeam: 'Mozambique',
-    homeFlag: 'ke', awayFlag: 'mz',
-    venue: 'AT&T Stadium', city: 'Dallas', country: 'USA',
+    id: 'GG4', phase: 'group', group: 'G', matchNumber: 40,
+    homeTeam: 'Nueva Zelanda', awayTeam: 'Egipto',
+    homeFlag: 'nz', awayFlag: 'eg',
+    venue: 'BC Place', city: 'Vancouver', country: 'Canada',
+    // Jun 21, 9:00 PM ET → Jun 22 01:00 UTC
+    utcDate: '2026-06-22T01:00:00Z',
+    status: 'upcoming',
+  },
+  {
+    id: 'GG5', phase: 'group', group: 'G', matchNumber: 65,
+    homeTeam: 'Egipto', awayTeam: 'Irán',
+    homeFlag: 'eg', awayFlag: 'ir',
+    venue: 'Lumen Field', city: 'Seattle', country: 'USA',
+    // Jun 26, 11:00 PM ET → Jun 27 03:00 UTC
+    utcDate: '2026-06-27T03:00:00Z',
+    status: 'upcoming',
+  },
+  {
+    id: 'GG6', phase: 'group', group: 'G', matchNumber: 64,
+    homeTeam: 'Nueva Zelanda', awayTeam: 'Bélgica',
+    homeFlag: 'nz', awayFlag: 'be',
+    venue: 'BC Place', city: 'Vancouver', country: 'Canada',
+    // Jun 26, 11:00 PM ET → Jun 27 03:00 UTC
+    utcDate: '2026-06-27T03:00:00Z',
+    status: 'upcoming',
+  },
+
+  // ══════════════════════════════════════════════════════════════════════
+  //  GRUPO H — España, Cabo Verde, Arabia Saudita, Uruguay
+  // ══════════════════════════════════════════════════════════════════════
+  {
+    id: 'GH1', phase: 'group', group: 'H', matchNumber: 14,
+    homeTeam: 'España', awayTeam: 'Cabo Verde',
+    homeFlag: 'es', awayFlag: 'cv',
+    venue: 'Mercedes-Benz Stadium', city: 'Atlanta', country: 'USA',
+    // Jun 15, 12:00 PM ET → 16:00 UTC
+    utcDate: '2026-06-15T16:00:00Z',
+    status: 'upcoming',
+  },
+  {
+    id: 'GH2', phase: 'group', group: 'H', matchNumber: 13,
+    homeTeam: 'Arabia Saudita', awayTeam: 'Uruguay',
+    homeFlag: 'sa', awayFlag: 'uy',
+    venue: 'Hard Rock Stadium', city: 'Miami Gardens', country: 'USA',
+    // Jun 15, 6:00 PM ET → 22:00 UTC
+    utcDate: '2026-06-15T22:00:00Z',
+    status: 'upcoming',
+  },
+  {
+    id: 'GH3', phase: 'group', group: 'H', matchNumber: 38,
+    homeTeam: 'España', awayTeam: 'Arabia Saudita',
+    homeFlag: 'es', awayFlag: 'sa',
+    venue: 'Mercedes-Benz Stadium', city: 'Atlanta', country: 'USA',
+    // Jun 21, 12:00 PM ET → 16:00 UTC
+    utcDate: '2026-06-21T16:00:00Z',
+    status: 'upcoming',
+  },
+  {
+    id: 'GH4', phase: 'group', group: 'H', matchNumber: 37,
+    homeTeam: 'Uruguay', awayTeam: 'Cabo Verde',
+    homeFlag: 'uy', awayFlag: 'cv',
+    venue: 'Hard Rock Stadium', city: 'Miami Gardens', country: 'USA',
+    // Jun 21, 6:00 PM ET → 22:00 UTC
     utcDate: '2026-06-21T22:00:00Z',
     status: 'upcoming',
   },
   {
-    id: 'GL5', phase: 'group', group: 'L', matchNumber: 71,
-    homeTeam: 'Kenia', awayTeam: 'Venezuela',
-    homeFlag: 'ke', awayFlag: 've',
+    id: 'GH5', phase: 'group', group: 'H', matchNumber: 63,
+    homeTeam: 'Cabo Verde', awayTeam: 'Arabia Saudita',
+    homeFlag: 'cv', awayFlag: 'sa',
+    venue: 'NRG Stadium', city: 'Houston', country: 'USA',
+    // Jun 26, 8:00 PM ET → Jun 27 00:00 UTC
+    utcDate: '2026-06-27T00:00:00Z',
+    status: 'upcoming',
+  },
+  {
+    id: 'GH6', phase: 'group', group: 'H', matchNumber: 66,
+    homeTeam: 'Uruguay', awayTeam: 'España',
+    homeFlag: 'uy', awayFlag: 'es',
     venue: 'Estadio Akron', city: 'Guadalajara', country: 'Mexico',
-    utcDate: '2026-06-26T02:00:00Z',
-    status: 'upcoming',
-  },
-  {
-    id: 'GL6', phase: 'group', group: 'L', matchNumber: 72,
-    homeTeam: 'Escocia', awayTeam: 'Mozambique',
-    homeFlag: 'gb-sct', awayFlag: 'mz',
-    venue: 'SoFi Stadium', city: 'Los Ángeles', country: 'USA',
-    utcDate: '2026-06-26T02:00:00Z',
+    // Jun 26, 8:00 PM ET → Jun 27 00:00 UTC
+    utcDate: '2026-06-27T00:00:00Z',
     status: 'upcoming',
   },
 
-  // ══════════════════════════════════
-  //  RONDA DE 32  (partidos 73–88)
-  // ══════════════════════════════════
-  { id: 'R32-1',  phase: 'round-of-32', matchNumber: 73,  homeTeam: '1º Grupo A', awayTeam: '2º Grupo B', venue: 'MetLife Stadium',   city: 'New Jersey',        country: 'USA',    utcDate: '2026-06-29T22:00:00Z' },
-  { id: 'R32-2',  phase: 'round-of-32', matchNumber: 74,  homeTeam: '1º Grupo C', awayTeam: '2º Grupo D', venue: 'AT&T Stadium',      city: 'Dallas',            country: 'USA',    utcDate: '2026-06-29T19:00:00Z' },
-  { id: 'R32-3',  phase: 'round-of-32', matchNumber: 75,  homeTeam: '1º Grupo E', awayTeam: '2º Grupo F', venue: 'Hard Rock Stadium', city: 'Miami',             country: 'USA',    utcDate: '2026-06-30T22:00:00Z' },
-  { id: 'R32-4',  phase: 'round-of-32', matchNumber: 76,  homeTeam: '1º Grupo G', awayTeam: '2º Grupo H', venue: 'SoFi Stadium',      city: 'Los Ángeles',       country: 'USA',    utcDate: '2026-06-30T19:00:00Z' },
-  { id: 'R32-5',  phase: 'round-of-32', matchNumber: 77,  homeTeam: '1º Grupo B', awayTeam: '2º Grupo A', venue: "Levi's Stadium",    city: 'San Francisco',     country: 'USA',    utcDate: '2026-07-01T22:00:00Z' },
-  { id: 'R32-6',  phase: 'round-of-32', matchNumber: 78,  homeTeam: '1º Grupo D', awayTeam: '2º Grupo C', venue: 'Gillette Stadium',  city: 'Boston',            country: 'USA',    utcDate: '2026-07-01T19:00:00Z' },
-  { id: 'R32-7',  phase: 'round-of-32', matchNumber: 79,  homeTeam: '1º Grupo F', awayTeam: '2º Grupo E', venue: 'BMO Field',         city: 'Toronto',           country: 'Canada', utcDate: '2026-07-02T22:00:00Z' },
-  { id: 'R32-8',  phase: 'round-of-32', matchNumber: 80,  homeTeam: '1º Grupo H', awayTeam: '2º Grupo G', venue: 'BC Place',          city: 'Vancouver',         country: 'Canada', utcDate: '2026-07-02T19:00:00Z' },
-  { id: 'R32-9',  phase: 'round-of-32', matchNumber: 81,  homeTeam: '1º Grupo I', awayTeam: '2º Grupo J', venue: 'Estadio Azteca',    city: 'Ciudad de México',  country: 'Mexico', utcDate: '2026-07-03T22:00:00Z' },
-  { id: 'R32-10', phase: 'round-of-32', matchNumber: 82,  homeTeam: '1º Grupo K', awayTeam: '2º Grupo L', venue: 'Estadio BBVA',      city: 'Monterrey',         country: 'Mexico', utcDate: '2026-07-03T19:00:00Z' },
-  { id: 'R32-11', phase: 'round-of-32', matchNumber: 83,  homeTeam: '1º Grupo J', awayTeam: '2º Grupo I', venue: 'MetLife Stadium',   city: 'New Jersey',        country: 'USA',    utcDate: '2026-07-04T22:00:00Z' },
-  { id: 'R32-12', phase: 'round-of-32', matchNumber: 84,  homeTeam: '1º Grupo L', awayTeam: '2º Grupo K', venue: 'AT&T Stadium',      city: 'Dallas',            country: 'USA',    utcDate: '2026-07-04T19:00:00Z' },
-  { id: 'R32-13', phase: 'round-of-32', matchNumber: 85,  homeTeam: 'TBD',        awayTeam: 'TBD',        venue: 'Hard Rock Stadium', city: 'Miami',             country: 'USA',    utcDate: '2026-07-05T22:00:00Z' },
-  { id: 'R32-14', phase: 'round-of-32', matchNumber: 86,  homeTeam: 'TBD',        awayTeam: 'TBD',        venue: 'SoFi Stadium',      city: 'Los Ángeles',       country: 'USA',    utcDate: '2026-07-05T19:00:00Z' },
-  { id: 'R32-15', phase: 'round-of-32', matchNumber: 87,  homeTeam: 'TBD',        awayTeam: 'TBD',        venue: "Levi's Stadium",    city: 'San Francisco',     country: 'USA',    utcDate: '2026-07-06T22:00:00Z' },
-  { id: 'R32-16', phase: 'round-of-32', matchNumber: 88,  homeTeam: 'TBD',        awayTeam: 'TBD',        venue: 'Gillette Stadium',  city: 'Boston',            country: 'USA',    utcDate: '2026-07-06T19:00:00Z' },
-
-  // ══════════════════════════════════
-  //  OCTAVOS DE FINAL  (89–96)
-  // ══════════════════════════════════
-  { id: 'R16-1', phase: 'round-of-16', matchNumber: 89, homeTeam: 'TBD', awayTeam: 'TBD', venue: 'MetLife Stadium',   city: 'New Jersey',  country: 'USA',    utcDate: '2026-07-09T22:00:00Z' },
-  { id: 'R16-2', phase: 'round-of-16', matchNumber: 90, homeTeam: 'TBD', awayTeam: 'TBD', venue: 'AT&T Stadium',      city: 'Dallas',      country: 'USA',    utcDate: '2026-07-09T19:00:00Z' },
-  { id: 'R16-3', phase: 'round-of-16', matchNumber: 91, homeTeam: 'TBD', awayTeam: 'TBD', venue: 'Hard Rock Stadium', city: 'Miami',       country: 'USA',    utcDate: '2026-07-10T22:00:00Z' },
-  { id: 'R16-4', phase: 'round-of-16', matchNumber: 92, homeTeam: 'TBD', awayTeam: 'TBD', venue: 'SoFi Stadium',      city: 'Los Ángeles', country: 'USA',    utcDate: '2026-07-10T19:00:00Z' },
-  { id: 'R16-5', phase: 'round-of-16', matchNumber: 93, homeTeam: 'TBD', awayTeam: 'TBD', venue: "Levi's Stadium",    city: 'San Francisco', country: 'USA',  utcDate: '2026-07-11T22:00:00Z' },
-  { id: 'R16-6', phase: 'round-of-16', matchNumber: 94, homeTeam: 'TBD', awayTeam: 'TBD', venue: 'Gillette Stadium',  city: 'Boston',      country: 'USA',    utcDate: '2026-07-11T19:00:00Z' },
-  { id: 'R16-7', phase: 'round-of-16', matchNumber: 95, homeTeam: 'TBD', awayTeam: 'TBD', venue: 'BMO Field',         city: 'Toronto',     country: 'Canada', utcDate: '2026-07-12T22:00:00Z' },
-  { id: 'R16-8', phase: 'round-of-16', matchNumber: 96, homeTeam: 'TBD', awayTeam: 'TBD', venue: 'BC Place',          city: 'Vancouver',   country: 'Canada', utcDate: '2026-07-12T19:00:00Z' },
-
-  // ══════════════════════════════════
-  //  CUARTOS DE FINAL  (97–100)
-  // ══════════════════════════════════
-  { id: 'QF-1', phase: 'quarter-final', matchNumber: 97,  homeTeam: 'TBD', awayTeam: 'TBD', venue: 'MetLife Stadium',   city: 'New Jersey',  country: 'USA', utcDate: '2026-07-15T22:00:00Z' },
-  { id: 'QF-2', phase: 'quarter-final', matchNumber: 98,  homeTeam: 'TBD', awayTeam: 'TBD', venue: 'AT&T Stadium',      city: 'Dallas',      country: 'USA', utcDate: '2026-07-15T19:00:00Z' },
-  { id: 'QF-3', phase: 'quarter-final', matchNumber: 99,  homeTeam: 'TBD', awayTeam: 'TBD', venue: 'Hard Rock Stadium', city: 'Miami',       country: 'USA', utcDate: '2026-07-16T22:00:00Z' },
-  { id: 'QF-4', phase: 'quarter-final', matchNumber: 100, homeTeam: 'TBD', awayTeam: 'TBD', venue: 'SoFi Stadium',      city: 'Los Ángeles', country: 'USA', utcDate: '2026-07-16T19:00:00Z' },
-
-  // ══════════════════════════════════
-  //  SEMIFINALES  (101–102)
-  // ══════════════════════════════════
-  { id: 'SF-1', phase: 'semi-final', matchNumber: 101, homeTeam: 'TBD', awayTeam: 'TBD', venue: 'MetLife Stadium', city: 'New Jersey', country: 'USA', utcDate: '2026-07-19T22:00:00Z' },
-  { id: 'SF-2', phase: 'semi-final', matchNumber: 102, homeTeam: 'TBD', awayTeam: 'TBD', venue: 'AT&T Stadium',    city: 'Dallas',     country: 'USA', utcDate: '2026-07-20T22:00:00Z' },
-
-  // ══════════════════════════════════
-  //  TERCER LUGAR  (103)
-  // ══════════════════════════════════
-  { id: 'TP', phase: 'third-place', matchNumber: 103, homeTeam: 'TBD', awayTeam: 'TBD', venue: 'Hard Rock Stadium', city: 'Miami', country: 'USA', utcDate: '2026-07-24T22:00:00Z' },
-
-  // ══════════════════════════════════
-  //  GRAN FINAL  (104) — MetLife Stadium, New Jersey
-  // ══════════════════════════════════
+  // ══════════════════════════════════════════════════════════════════════
+  //  GRUPO I — Francia, Senegal, Irak, Noruega
+  // ══════════════════════════════════════════════════════════════════════
   {
-    id: 'FINAL', phase: 'final', matchNumber: 104,
-    homeTeam: 'TBD', awayTeam: 'TBD',
-    venue: 'MetLife Stadium', city: 'East Rutherford, NJ', country: 'USA',
-    utcDate: '2026-07-26T20:00:00Z',
+    id: 'GI1', phase: 'group', group: 'I', matchNumber: 17,
+    homeTeam: 'Francia', awayTeam: 'Senegal',
+    homeFlag: 'fr', awayFlag: 'sn',
+    venue: 'MetLife Stadium', city: 'East Rutherford', country: 'USA',
+    // Jun 16, 3:00 PM ET → 19:00 UTC
+    utcDate: '2026-06-16T19:00:00Z',
+    status: 'upcoming',
   },
+  {
+    id: 'GI2', phase: 'group', group: 'I', matchNumber: 18,
+    homeTeam: 'Irak', awayTeam: 'Noruega',
+    homeFlag: 'iq', awayFlag: 'no',
+    venue: 'Gillette Stadium', city: 'Foxborough', country: 'USA',
+    // Jun 16, 6:00 PM ET → 22:00 UTC
+    utcDate: '2026-06-16T22:00:00Z',
+    status: 'upcoming',
+  },
+  {
+    id: 'GI3', phase: 'group', group: 'I', matchNumber: 42,
+    homeTeam: 'Francia', awayTeam: 'Irak',
+    homeFlag: 'fr', awayFlag: 'iq',
+    venue: 'Lincoln Financial Field', city: 'Filadelfia', country: 'USA',
+    // Jun 22, 5:00 PM ET → 21:00 UTC
+    utcDate: '2026-06-22T21:00:00Z',
+    status: 'upcoming',
+  },
+  {
+    id: 'GI4', phase: 'group', group: 'I', matchNumber: 43,
+    homeTeam: 'Noruega', awayTeam: 'Senegal',
+    homeFlag: 'no', awayFlag: 'sn',
+    venue: 'MetLife Stadium', city: 'East Rutherford', country: 'USA',
+    // Jun 22, 8:00 PM ET → Jun 23 00:00 UTC
+    utcDate: '2026-06-23T00:00:00Z',
+    status: 'upcoming',
+  },
+  {
+    id: 'GI5', phase: 'group', group: 'I', matchNumber: 61,
+    homeTeam: 'Noruega', awayTeam: 'Francia',
+    homeFlag: 'no', awayFlag: 'fr',
+    venue: 'Gillette Stadium', city: 'Foxborough', country: 'USA',
+    // Jun 26, 3:00 PM ET → 19:00 UTC
+    utcDate: '2026-06-26T19:00:00Z',
+    status: 'upcoming',
+  },
+  {
+    id: 'GI6', phase: 'group', group: 'I', matchNumber: 62,
+    homeTeam: 'Senegal', awayTeam: 'Irak',
+    homeFlag: 'sn', awayFlag: 'iq',
+    venue: 'BMO Field', city: 'Toronto', country: 'Canada',
+    // Jun 26, 3:00 PM ET → 19:00 UTC
+    utcDate: '2026-06-26T19:00:00Z',
+    status: 'upcoming',
+  },
+
+  // ══════════════════════════════════════════════════════════════════════
+  //  GRUPO J — Argentina, Algeria, Austria, Jordania
+  // ══════════════════════════════════════════════════════════════════════
+  {
+    id: 'GJ1', phase: 'group', group: 'J', matchNumber: 19,
+    homeTeam: 'Argentina', awayTeam: 'Algeria',
+    homeFlag: 'ar', awayFlag: 'dz',
+    venue: 'Arrowhead Stadium', city: 'Kansas City', country: 'USA',
+    // Jun 16, 9:00 PM ET → Jun 17 01:00 UTC
+    utcDate: '2026-06-17T01:00:00Z',
+    status: 'upcoming',
+  },
+  {
+    id: 'GJ2', phase: 'group', group: 'J', matchNumber: 20,
+    homeTeam: 'Austria', awayTeam: 'Jordania',
+    homeFlag: 'at', awayFlag: 'jo',
+    venue: "Levi's Stadium", city: 'Santa Clara', country: 'USA',
+    // Jun 16, 12:00 AM ET (Jun 17) → Jun 17 04:00 UTC
+    utcDate: '2026-06-17T04:00:00Z',
+    status: 'upcoming',
+  },
+  {
+    id: 'GJ3', phase: 'group', group: 'J', matchNumber: 41,
+    homeTeam: 'Argentina', awayTeam: 'Austria',
+    homeFlag: 'ar', awayFlag: 'at',
+    venue: 'AT&T Stadium', city: 'Arlington', country: 'USA',
+    // Jun 22, 1:00 PM ET → 17:00 UTC
+    utcDate: '2026-06-22T17:00:00Z',
+    status: 'upcoming',
+  },
+  {
+    id: 'GJ4', phase: 'group', group: 'J', matchNumber: 44,
+    homeTeam: 'Jordania', awayTeam: 'Algeria',
+    homeFlag: 'jo', awayFlag: 'dz',
+    venue: "Levi's Stadium", city: 'Santa Clara', country: 'USA',
+    // Jun 22, 11:00 PM ET → Jun 23 03:00 UTC
+    utcDate: '2026-06-23T03:00:00Z',
+    status: 'upcoming',
+  },
+  {
+    id: 'GJ5', phase: 'group', group: 'J', matchNumber: 69,
+    homeTeam: 'Algeria', awayTeam: 'Austria',
+    homeFlag: 'dz', awayFlag: 'at',
+    venue: 'Arrowhead Stadium', city: 'Kansas City', country: 'USA',
+    // Jun 27, 10:00 PM ET → Jun 28 02:00 UTC
+    utcDate: '2026-06-28T02:00:00Z',
+    status: 'upcoming',
+  },
+  {
+    id: 'GJ6', phase: 'group', group: 'J', matchNumber: 70,
+    homeTeam: 'Jordania', awayTeam: 'Argentina',
+    homeFlag: 'jo', awayFlag: 'ar',
+    venue: 'AT&T Stadium', city: 'Arlington', country: 'USA',
+    // Jun 27, 10:00 PM ET → Jun 28 02:00 UTC
+    utcDate: '2026-06-28T02:00:00Z',
+    status: 'upcoming',
+  },
+
+  // ══════════════════════════════════════════════════════════════════════
+  //  GRUPO K — Portugal, DR Congo, Uzbekistán, Colombia
+  // ══════════════════════════════════════════════════════════════════════
+  {
+    id: 'GK1', phase: 'group', group: 'K', matchNumber: 23,
+    homeTeam: 'Portugal', awayTeam: 'DR Congo',
+    homeFlag: 'pt', awayFlag: 'cd',
+    venue: 'NRG Stadium', city: 'Houston', country: 'USA',
+    // Jun 17, 1:00 PM ET → 17:00 UTC
+    utcDate: '2026-06-17T17:00:00Z',
+    status: 'upcoming',
+  },
+  {
+    id: 'GK2', phase: 'group', group: 'K', matchNumber: 24,
+    homeTeam: 'Uzbekistán', awayTeam: 'Colombia',
+    homeFlag: 'uz', awayFlag: 'co',
+    venue: 'Estadio Azteca', city: 'Ciudad de México', country: 'Mexico',
+    // Jun 17, 10:00 PM ET → Jun 18 02:00 UTC
+    utcDate: '2026-06-18T02:00:00Z',
+    status: 'upcoming',
+  },
+  {
+    id: 'GK3', phase: 'group', group: 'K', matchNumber: 47,
+    homeTeam: 'Portugal', awayTeam: 'Uzbekistán',
+    homeFlag: 'pt', awayFlag: 'uz',
+    venue: 'NRG Stadium', city: 'Houston', country: 'USA',
+    // Jun 23, 1:00 PM ET → 17:00 UTC
+    utcDate: '2026-06-23T17:00:00Z',
+    status: 'upcoming',
+  },
+  {
+    id: 'GK4', phase: 'group', group: 'K', matchNumber: 48,
+    homeTeam: 'Colombia', awayTeam: 'DR Congo',
+    homeFlag: 'co', awayFlag: 'cd',
+    venue: 'Estadio Akron', city: 'Guadalajara', country: 'Mexico',
+    // Jun 23, 10:00 PM ET → Jun 24 02:00 UTC
+    utcDate: '2026-06-24T02:00:00Z',
+    status: 'upcoming',
+  },
+  {
+    id: 'GK5', phase: 'group', group: 'K', matchNumber: 71,
+    homeTeam: 'Colombia', awayTeam: 'Portugal',
+    homeFlag: 'co', awayFlag: 'pt',
+    venue: 'Hard Rock Stadium', city: 'Miami Gardens', country: 'USA',
+    // Jun 27, 7:30 PM ET → 23:30 UTC
+    utcDate: '2026-06-27T23:30:00Z',
+    status: 'upcoming',
+  },
+  {
+    id: 'GK6', phase: 'group', group: 'K', matchNumber: 72,
+    homeTeam: 'DR Congo', awayTeam: 'Uzbekistán',
+    homeFlag: 'cd', awayFlag: 'uz',
+    venue: 'Mercedes-Benz Stadium', city: 'Atlanta', country: 'USA',
+    // Jun 27, 7:30 PM ET → 23:30 UTC
+    utcDate: '2026-06-27T23:30:00Z',
+    status: 'upcoming',
+  },
+
+  // ══════════════════════════════════════════════════════════════════════
+  //  GRUPO L — Inglaterra, Croacia, Ghana, Panamá
+  // ══════════════════════════════════════════════════════════════════════
+  {
+    id: 'GL1', phase: 'group', group: 'L', matchNumber: 22,
+    homeTeam: 'Inglaterra', awayTeam: 'Croacia',
+    homeFlag: 'gb-eng', awayFlag: 'hr',
+    venue: 'AT&T Stadium', city: 'Arlington', country: 'USA',
+    // Jun 17, 4:00 PM ET → 20:00 UTC
+    utcDate: '2026-06-17T20:00:00Z',
+    status: 'upcoming',
+  },
+  {
+    id: 'GL2', phase: 'group', group: 'L', matchNumber: 21,
+    homeTeam: 'Ghana', awayTeam: 'Panamá',
+    homeFlag: 'gh', awayFlag: 'pa',
+    venue: 'BMO Field', city: 'Toronto', country: 'Canada',
+    // Jun 17, 7:00 PM ET → 23:00 UTC
+    utcDate: '2026-06-17T23:00:00Z',
+    status: 'upcoming',
+  },
+  {
+    id: 'GL3', phase: 'group', group: 'L', matchNumber: 45,
+    homeTeam: 'Inglaterra', awayTeam: 'Ghana',
+    homeFlag: 'gb-eng', awayFlag: 'gh',
+    venue: 'Gillette Stadium', city: 'Foxborough', country: 'USA',
+    // Jun 23, 4:00 PM ET → 20:00 UTC
+    utcDate: '2026-06-23T20:00:00Z',
+    status: 'upcoming',
+  },
+  {
+    id: 'GL4', phase: 'group', group: 'L', matchNumber: 46,
+    homeTeam: 'Panamá', awayTeam: 'Croacia',
+    homeFlag: 'pa', awayFlag: 'hr',
+    venue: 'BMO Field', city: 'Toronto', country: 'Canada',
+    // Jun 23, 7:00 PM ET → 23:00 UTC
+    utcDate: '2026-06-23T23:00:00Z',
+    status: 'upcoming',
+  },
+  {
+    id: 'GL5', phase: 'group', group: 'L', matchNumber: 67,
+    homeTeam: 'Panamá', awayTeam: 'Inglaterra',
+    homeFlag: 'pa', awayFlag: 'gb-eng',
+    venue: 'MetLife Stadium', city: 'East Rutherford', country: 'USA',
+    // Jun 27, 5:00 PM ET → 21:00 UTC
+    utcDate: '2026-06-27T21:00:00Z',
+    status: 'upcoming',
+  },
+  {
+    id: 'GL6', phase: 'group', group: 'L', matchNumber: 68,
+    homeTeam: 'Croacia', awayTeam: 'Ghana',
+    homeFlag: 'hr', awayFlag: 'gh',
+    venue: 'Lincoln Financial Field', city: 'Filadelfia', country: 'USA',
+    // Jun 27, 5:00 PM ET → 21:00 UTC
+    utcDate: '2026-06-27T21:00:00Z',
+    status: 'upcoming',
+  },
+
 ];
