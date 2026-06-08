@@ -14,7 +14,7 @@
         "options": {}
       },
       "notesInFlow": true,
-      "notes": "ENDPOINT para Kapso:\nProducción: https://TU-N8N/webhook/mundial-kapso\nTest:       https://TU-N8N/webhook-test/mundial-kapso\n\nAjustar el formato en el nodo 'Parsear Mensaje'\nsi el payload de Kapso difiere."
+      "notes": "ENDPOINT para Kapso:\nProducción: https://TU-N8N/webhook/mundial-kapso\nTest:       https://TU-N8N/webhook-test/mundial-kapso"
     },
     {
       "id": "aaaa0002",
@@ -23,7 +23,7 @@
       "typeVersion": 2,
       "position": [440, 400],
       "parameters": {
-        "jsCode": "const body = $input.first().json;\n\nlet phone = '';\nlet messageText = '';\n\n// --- Formato Kapso (ajustar si es necesario) ---\nif (body.from) {\n  phone = String(body.from);\n  messageText = typeof body.text === 'string'\n    ? body.text\n    : (body.text?.body || body.message || '');\n}\n// --- Formato Meta WhatsApp Cloud API ---\nelse if (body.entry?.[0]?.changes?.[0]?.value?.messages) {\n  const msg = body.entry[0].changes[0].value.messages[0];\n  phone = msg.from;\n  messageText = msg.text?.body || '';\n}\n// --- Fallback genérico ---\nelse {\n  phone = String(body.phone || body.sender || body.wa_id || body.from || '');\n  messageText = String(body.message || body.body || body.text || '');\n}\n\n// Limpiar teléfono (quitar +, espacios, guiones)\nphone = phone.replace(/[\\s+\\-().]/g, '');\n\n// Detectar acción\nconst msgUp = messageText.trim().toUpperCase();\nlet action = 'OTHER';\nif (msgUp.includes('ALTA') && msgUp.includes('MUNDIAL')) action = 'ALTA';\nelse if (msgUp === 'STOP' || msgUp.startsWith('STOP ')) action = 'STOP';\n\nreturn [{ json: { phone, messageText, action, timestamp: new Date().toISOString() } }];"
+        "jsCode": "const body = $input.first().json;\n\nlet phone = '';\nlet messageText = '';\n\n// Formato Kapso directo\nif (body.from) {\n  phone = String(body.from);\n  messageText = typeof body.text === 'string' ? body.text : (body.text?.body || body.message || '');\n}\n// Formato Meta WhatsApp Cloud API\nelse if (body.entry?.[0]?.changes?.[0]?.value?.messages) {\n  const msg = body.entry[0].changes[0].value.messages[0];\n  phone = msg.from;\n  messageText = msg.text?.body || '';\n}\n// Fallback\nelse {\n  phone = String(body.phone || body.sender || body.wa_id || body.from || '');\n  messageText = String(body.message || body.body || body.text || '');\n}\n\nphone = phone.replace(/[\\s+\\-().]/g, '');\n\nconst msgUp = messageText.trim().toUpperCase();\nlet action = 'OTHER';\nif (msgUp.includes('ALTA') && msgUp.includes('MUNDIAL')) action = 'ALTA';\nelse if (msgUp === 'STOP' || msgUp.startsWith('STOP ')) action = 'STOP';\n\nreturn [{ json: { phone, messageText, action, timestamp: new Date().toISOString() } }];"
       }
     },
     {
@@ -56,27 +56,14 @@
       "position": [920, 260],
       "parameters": {
         "operation": "read",
-        "documentId": {
-          "__rl": true,
-          "value": "PEGAR_SPREADSHEET_ID_AQUI",
-          "mode": "id"
-        },
-        "sheetName": {
-          "__rl": true,
-          "value": "Suscriptores",
-          "mode": "name"
-        },
+        "documentId": { "__rl": true, "value": "PEGAR_SPREADSHEET_ID_AQUI", "mode": "id" },
+        "sheetName": { "__rl": true, "value": "Suscriptores", "mode": "name" },
         "filtersUI": {},
         "options": { "returnAllMatchingRows": true }
       },
       "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "REEMPLAZAR_CON_TU_CREDENTIAL_ID",
-          "name": "Google Sheets"
-        }
-      },
-      "notesInFlow": true,
-      "notes": "Reemplaza el Spreadsheet ID y reconecta\nla credencial de Google Sheets."
+        "googleSheetsOAuth2Api": { "id": "REEMPLAZAR_CON_TU_CREDENTIAL_ID", "name": "Google Sheets" }
+      }
     },
     {
       "id": "aaaa0005",
@@ -118,16 +105,8 @@
       "position": [1640, 140],
       "parameters": {
         "operation": "append",
-        "documentId": {
-          "__rl": true,
-          "value": "PEGAR_SPREADSHEET_ID_AQUI",
-          "mode": "id"
-        },
-        "sheetName": {
-          "__rl": true,
-          "value": "Suscriptores",
-          "mode": "name"
-        },
+        "documentId": { "__rl": true, "value": "PEGAR_SPREADSHEET_ID_AQUI", "mode": "id" },
+        "sheetName": { "__rl": true, "value": "Suscriptores", "mode": "name" },
         "columns": {
           "mappingMode": "defineBelow",
           "value": {
@@ -142,42 +121,52 @@
         "options": {}
       },
       "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "REEMPLAZAR_CON_TU_CREDENTIAL_ID",
-          "name": "Google Sheets"
-        }
+        "googleSheetsOAuth2Api": { "id": "REEMPLAZAR_CON_TU_CREDENTIAL_ID", "name": "Google Sheets" }
       }
     },
+
     {
-      "id": "aaaa0008",
-      "name": "Enviar Bienvenida",
+      "id": "aaaa0015",
+      "name": "GPT — Bienvenida",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
       "position": [1880, 140],
       "parameters": {
         "method": "POST",
-        "url": "https://api.kapso.io/v1/messages",
+        "url": "https://api.openai.com/v1/chat/completions",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "Authorization", "value": "Bearer PEGAR_KAPSO_API_KEY_AQUI" },
+            { "name": "Authorization", "value": "Bearer PEGAR_OPENAI_API_KEY_AQUI" },
             { "name": "Content-Type", "value": "application/json" }
           ]
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ to: $('Parsear Mensaje').first().json.phone, type: 'text', text: { body: '\\u2705 \\u00a1Listo! Est\\u00e1s suscrito a las alertas del *Mundial 2026* \\ud83c\\udfc6\\u26bd\\n\\nTe avisar\\u00e9:\\n\\u2022 30 min antes de cada partido\\n\\u2022 Cuando haya goles\\n\\u2022 El resultado final\\n\\nEnv\\u00eda *STOP* en cualquier momento para cancelar.' } }) }}",
+        "jsonBody": "{{ JSON.stringify({ model: 'gpt-4o-mini', max_tokens: 220, messages: [ { role: 'system', content: 'Eres el asistente oficial del portal mundial.rodai.io para el Mundial 2026. Escribes en español, tono entusiasta pero profesional, para WhatsApp. Máximo 200 caracteres. Nunca uses markdown pesado, solo *negrita* si es necesario. Siempre termina con: Responde STOP para cancelar.' }, { role: 'user', content: 'Genera un mensaje de confirmación de suscripción para alertas del Mundial 2026. El usuario acaba de escribir ALTA. Incluye que recibirá: alerta 30 min antes de cada partido, avisos de goles y resultado final.' } ] }) }}",
         "options": {}
       },
       "notesInFlow": true,
-      "notes": "Ajusta la URL de Kapso si es diferente.\nReemplaza PEGAR_KAPSO_API_KEY_AQUI con tu API Key real."
+      "notes": "Genera el mensaje de bienvenida con GPT-4o-mini.\nCosto: ~$0.0001 por suscripción.\nReemplaza PEGAR_OPENAI_API_KEY_AQUI."
     },
+
     {
-      "id": "aaaa0009",
-      "name": "Enviar Ya Suscrito",
+      "id": "aaaa0016",
+      "name": "Extraer Texto GPT Bienvenida",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2120, 140],
+      "parameters": {
+        "jsCode": "const gptResponse = $input.first().json;\nconst text = gptResponse.choices?.[0]?.message?.content || '✅ ¡Suscrito! Recibirás alertas del Mundial 2026. Responde STOP para cancelar.';\nconst phone = $('Parsear Mensaje').first().json.phone;\nreturn [{ json: { phone, mensajeGenerado: text.trim() } }];"
+      }
+    },
+
+    {
+      "id": "aaaa0008",
+      "name": "Enviar Bienvenida",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
-      "position": [1640, 380],
+      "position": [2360, 140],
       "parameters": {
         "method": "POST",
         "url": "https://api.kapso.io/v1/messages",
@@ -190,10 +179,70 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ to: $json.phone, type: 'text', text: { body: '\\u26bd Ya est\\u00e1s suscrito a las alertas del *Mundial 2026*.\\n\\nEnv\\u00eda *STOP* si deseas cancelar.' } }) }}",
+        "jsonBody": "={{ JSON.stringify({ to: $json.phone, type: 'text', text: { body: $json.mensajeGenerado } }) }}",
+        "options": {}
+      },
+      "notesInFlow": true,
+      "notes": "Ventana 24h activa (usuario acaba de escribir ALTA)\n→ Sin riesgo de spam, no necesita template."
+    },
+
+    {
+      "id": "aaaa0017",
+      "name": "GPT — Ya Suscrito",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1640, 380],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "Bearer PEGAR_OPENAI_API_KEY_AQUI" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{{ JSON.stringify({ model: 'gpt-4o-mini', max_tokens: 100, messages: [ { role: 'system', content: 'Asistente del Mundial 2026 para WhatsApp. Español, tono amigable. Máximo 120 caracteres.' }, { role: 'user', content: 'El usuario ya está suscrito. Dile de forma simpática que ya lo tenemos registrado y que le llegará todo. Recuérdale que puede cancelar con STOP.' } ] }) }}",
         "options": {}
       }
     },
+
+    {
+      "id": "aaaa0018",
+      "name": "Extraer Texto GPT Ya Suscrito",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1880, 380],
+      "parameters": {
+        "jsCode": "const gptResponse = $input.first().json;\nconst text = gptResponse.choices?.[0]?.message?.content || '⚽ Ya estás en la lista. Te llegará todo del Mundial 2026. Responde STOP para cancelar.';\nconst phone = $('Parsear Mensaje').first().json.phone;\nreturn [{ json: { phone, mensajeGenerado: text.trim() } }];"
+      }
+    },
+
+    {
+      "id": "aaaa0009",
+      "name": "Enviar Ya Suscrito",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [2120, 380],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kapso.io/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "Bearer PEGAR_KAPSO_API_KEY_AQUI" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ to: $json.phone, type: 'text', text: { body: $json.mensajeGenerado } }) }}",
+        "options": {}
+      }
+    },
+
     {
       "id": "aaaa0010",
       "name": "¿Es STOP?",
@@ -224,31 +273,17 @@
       "position": [1160, 480],
       "parameters": {
         "operation": "read",
-        "documentId": {
-          "__rl": true,
-          "value": "PEGAR_SPREADSHEET_ID_AQUI",
-          "mode": "id"
-        },
-        "sheetName": {
-          "__rl": true,
-          "value": "Suscriptores",
-          "mode": "name"
-        },
+        "documentId": { "__rl": true, "value": "PEGAR_SPREADSHEET_ID_AQUI", "mode": "id" },
+        "sheetName": { "__rl": true, "value": "Suscriptores", "mode": "name" },
         "filtersUI": {
           "values": [
-            {
-              "lookupColumn": "phone",
-              "lookupValue": "={{ $('Parsear Mensaje').first().json.phone }}"
-            }
+            { "lookupColumn": "phone", "lookupValue": "={{ $('Parsear Mensaje').first().json.phone }}" }
           ]
         },
         "options": {}
       },
       "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "REEMPLAZAR_CON_TU_CREDENTIAL_ID",
-          "name": "Google Sheets"
-        }
+        "googleSheetsOAuth2Api": { "id": "REEMPLAZAR_CON_TU_CREDENTIAL_ID", "name": "Google Sheets" }
       }
     },
     {
@@ -259,39 +294,61 @@
       "position": [1400, 480],
       "parameters": {
         "operation": "update",
-        "documentId": {
-          "__rl": true,
-          "value": "PEGAR_SPREADSHEET_ID_AQUI",
-          "mode": "id"
-        },
-        "sheetName": {
-          "__rl": true,
-          "value": "Suscriptores",
-          "mode": "name"
-        },
+        "documentId": { "__rl": true, "value": "PEGAR_SPREADSHEET_ID_AQUI", "mode": "id" },
+        "sheetName": { "__rl": true, "value": "Suscriptores", "mode": "name" },
         "columns": {
           "mappingMode": "defineBelow",
-          "value": {
-            "active": "FALSE"
-          },
+          "value": { "active": "FALSE" },
           "matchingColumns": ["phone"],
           "schema": []
         },
         "options": {}
       },
       "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "REEMPLAZAR_CON_TU_CREDENTIAL_ID",
-          "name": "Google Sheets"
-        }
+        "googleSheetsOAuth2Api": { "id": "REEMPLAZAR_CON_TU_CREDENTIAL_ID", "name": "Google Sheets" }
       }
     },
+
+    {
+      "id": "aaaa0019",
+      "name": "GPT — Confirmar Baja",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1640, 480],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "Bearer PEGAR_OPENAI_API_KEY_AQUI" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{{ JSON.stringify({ model: 'gpt-4o-mini', max_tokens: 120, messages: [ { role: 'system', content: 'Asistente del Mundial 2026. WhatsApp. Español. Tono cálido. Máximo 150 caracteres.' }, { role: 'user', content: 'El usuario pidió darse de baja (STOP). Confirma la baja, sé amigable, dile que puede volver cuando quiera escribiendo ALTA Mundial 2026.' } ] }) }}",
+        "options": {}
+      }
+    },
+
+    {
+      "id": "aaaa0020",
+      "name": "Extraer Texto GPT Baja",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1880, 480],
+      "parameters": {
+        "jsCode": "const gptResponse = $input.first().json;\nconst text = gptResponse.choices?.[0]?.message?.content || '✅ Te dimos de baja. Si quieres volver, escribe ALTA Mundial 2026. ¡Hasta pronto! 👋';\nconst phone = $('Parsear Mensaje').first().json.phone;\nreturn [{ json: { phone, mensajeGenerado: text.trim() } }];"
+      }
+    },
+
     {
       "id": "aaaa0013",
       "name": "Confirmar Baja",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
-      "position": [1640, 480],
+      "position": [2120, 480],
       "parameters": {
         "method": "POST",
         "url": "https://api.kapso.io/v1/messages",
@@ -304,7 +361,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ to: $('Parsear Mensaje').first().json.phone, type: 'text', text: { body: '\\u2705 Te dimos de baja de las alertas del *Mundial 2026*.\\n\\nSi cambias de opini\\u00f3n esc\\u00r1benos: *ALTA Mundial 2026* \\u26bd\\n\\n\\u00a1Hasta pronto! \\ud83d\\udc4b' } }) }}",
+        "jsonBody": "={{ JSON.stringify({ to: $json.phone, type: 'text', text: { body: $json.mensajeGenerado } }) }}",
         "options": {}
       }
     },
@@ -319,14 +376,10 @@
   ],
   "connections": {
     "Kapso Webhook": {
-      "main": [
-        [{ "node": "Parsear Mensaje", "type": "main", "index": 0 }]
-      ]
+      "main": [[{ "node": "Parsear Mensaje", "type": "main", "index": 0 }]]
     },
     "Parsear Mensaje": {
-      "main": [
-        [{ "node": "¿Es ALTA?", "type": "main", "index": 0 }]
-      ]
+      "main": [[{ "node": "¿Es ALTA?", "type": "main", "index": 0 }]]
     },
     "¿Es ALTA?": {
       "main": [
@@ -335,25 +388,31 @@
       ]
     },
     "Leer Suscriptores": {
-      "main": [
-        [{ "node": "Verificar Si Existe", "type": "main", "index": 0 }]
-      ]
+      "main": [[{ "node": "Verificar Si Existe", "type": "main", "index": 0 }]]
     },
     "Verificar Si Existe": {
-      "main": [
-        [{ "node": "¿Ya Suscrito?", "type": "main", "index": 0 }]
-      ]
+      "main": [[{ "node": "¿Ya Suscrito?", "type": "main", "index": 0 }]]
     },
     "¿Ya Suscrito?": {
       "main": [
-        [{ "node": "Enviar Ya Suscrito", "type": "main", "index": 0 }],
+        [{ "node": "GPT — Ya Suscrito", "type": "main", "index": 0 }],
         [{ "node": "Agregar Suscriptor", "type": "main", "index": 0 }]
       ]
     },
     "Agregar Suscriptor": {
-      "main": [
-        [{ "node": "Enviar Bienvenida", "type": "main", "index": 0 }]
-      ]
+      "main": [[{ "node": "GPT — Bienvenida", "type": "main", "index": 0 }]]
+    },
+    "GPT — Bienvenida": {
+      "main": [[{ "node": "Extraer Texto GPT Bienvenida", "type": "main", "index": 0 }]]
+    },
+    "Extraer Texto GPT Bienvenida": {
+      "main": [[{ "node": "Enviar Bienvenida", "type": "main", "index": 0 }]]
+    },
+    "GPT — Ya Suscrito": {
+      "main": [[{ "node": "Extraer Texto GPT Ya Suscrito", "type": "main", "index": 0 }]]
+    },
+    "Extraer Texto GPT Ya Suscrito": {
+      "main": [[{ "node": "Enviar Ya Suscrito", "type": "main", "index": 0 }]]
     },
     "¿Es STOP?": {
       "main": [
@@ -362,14 +421,16 @@
       ]
     },
     "Buscar Suscriptor STOP": {
-      "main": [
-        [{ "node": "Marcar Inactivo", "type": "main", "index": 0 }]
-      ]
+      "main": [[{ "node": "Marcar Inactivo", "type": "main", "index": 0 }]]
     },
     "Marcar Inactivo": {
-      "main": [
-        [{ "node": "Confirmar Baja", "type": "main", "index": 0 }]
-      ]
+      "main": [[{ "node": "GPT — Confirmar Baja", "type": "main", "index": 0 }]]
+    },
+    "GPT — Confirmar Baja": {
+      "main": [[{ "node": "Extraer Texto GPT Baja", "type": "main", "index": 0 }]]
+    },
+    "Extraer Texto GPT Baja": {
+      "main": [[{ "node": "Confirmar Baja", "type": "main", "index": 0 }]]
     }
   },
   "active": false,
