@@ -7,6 +7,7 @@ import MatchCard from '@/components/MatchCard';
 import PhaseFilter, { type FilterValue } from '@/components/PhaseFilter';
 import SyncButton from '@/components/SyncButton';
 import WhatsAppButton from '@/components/WhatsAppButton';
+import TelegramButton from '@/components/TelegramButton';
 
 const BASE_URL =
   typeof window !== 'undefined'
@@ -82,6 +83,7 @@ export default function Home() {
           <div className="flex flex-wrap items-center justify-center gap-3">
             <SyncButton baseUrl={BASE_URL} />
             <WhatsAppButton />
+            <TelegramButton />
           </div>
         </div>
       </header>
