@@ -729,4 +729,220 @@ export const matches: Match[] = [
     status: 'upcoming',
   },
 
+  // ══════════════════════════════════════════════════════════════════════
+  //  RONDA DE 32 — Partidos 73–88 (Jun 29 – Jul 4)
+  // ══════════════════════════════════════════════════════════════════════
+  {
+    id: 'R32-1', phase: 'round-of-32', matchNumber: 73,
+    homeTeam: 'Por definir', awayTeam: 'Por definir',
+    venue: 'MetLife Stadium', city: 'East Rutherford', country: 'USA',
+    utcDate: '2026-06-29T22:00:00Z', status: 'upcoming',
+  },
+  {
+    id: 'R32-2', phase: 'round-of-32', matchNumber: 74,
+    homeTeam: 'Por definir', awayTeam: 'Por definir',
+    venue: 'Rose Bowl', city: 'Los Ángeles', country: 'USA',
+    utcDate: '2026-06-30T02:00:00Z', status: 'upcoming',
+  },
+  {
+    id: 'R32-3', phase: 'round-of-32', matchNumber: 75,
+    homeTeam: 'Por definir', awayTeam: 'Por definir',
+    venue: 'AT&T Stadium', city: 'Arlington', country: 'USA',
+    utcDate: '2026-06-30T22:00:00Z', status: 'upcoming',
+  },
+  {
+    id: 'R32-4', phase: 'round-of-32', matchNumber: 76,
+    homeTeam: 'Por definir', awayTeam: 'Por definir',
+    venue: 'BC Place', city: 'Vancouver', country: 'Canada',
+    utcDate: '2026-07-01T02:00:00Z', status: 'upcoming',
+  },
+  {
+    id: 'R32-5', phase: 'round-of-32', matchNumber: 77,
+    homeTeam: 'Por definir', awayTeam: 'Por definir',
+    venue: 'Hard Rock Stadium', city: 'Miami Gardens', country: 'USA',
+    utcDate: '2026-07-01T22:00:00Z', status: 'upcoming',
+  },
+  {
+    id: 'R32-6', phase: 'round-of-32', matchNumber: 78,
+    homeTeam: 'Por definir', awayTeam: 'Por definir',
+    venue: 'Estadio Azteca', city: 'Ciudad de México', country: 'Mexico',
+    utcDate: '2026-07-02T02:00:00Z', status: 'upcoming',
+  },
+  {
+    id: 'R32-7', phase: 'round-of-32', matchNumber: 79,
+    homeTeam: 'Por definir', awayTeam: 'Por definir',
+    venue: "Levi's Stadium", city: 'Santa Clara', country: 'USA',
+    utcDate: '2026-07-02T22:00:00Z', status: 'upcoming',
+  },
+  {
+    id: 'R32-8', phase: 'round-of-32', matchNumber: 80,
+    homeTeam: 'Por definir', awayTeam: 'Por definir',
+    venue: 'Mercedes-Benz Stadium', city: 'Atlanta', country: 'USA',
+    utcDate: '2026-07-03T02:00:00Z', status: 'upcoming',
+  },
+  {
+    id: 'R32-9', phase: 'round-of-32', matchNumber: 81,
+    homeTeam: 'Por definir', awayTeam: 'Por definir',
+    venue: 'Estadio Akron', city: 'Guadalajara', country: 'Mexico',
+    utcDate: '2026-07-03T22:00:00Z', status: 'upcoming',
+  },
+  {
+    id: 'R32-10', phase: 'round-of-32', matchNumber: 82,
+    homeTeam: 'Por definir', awayTeam: 'Por definir',
+    venue: 'Gillette Stadium', city: 'Foxborough', country: 'USA',
+    utcDate: '2026-07-04T02:00:00Z', status: 'upcoming',
+  },
+  {
+    id: 'R32-11', phase: 'round-of-32', matchNumber: 83,
+    homeTeam: 'Por definir', awayTeam: 'Por definir',
+    venue: 'Lincoln Financial Field', city: 'Filadelfia', country: 'USA',
+    utcDate: '2026-07-04T22:00:00Z', status: 'upcoming',
+  },
+  {
+    id: 'R32-12', phase: 'round-of-32', matchNumber: 84,
+    homeTeam: 'Por definir', awayTeam: 'Por definir',
+    venue: 'BMO Field', city: 'Toronto', country: 'Canada',
+    utcDate: '2026-07-05T02:00:00Z', status: 'upcoming',
+  },
+  {
+    id: 'R32-13', phase: 'round-of-32', matchNumber: 85,
+    homeTeam: 'Por definir', awayTeam: 'Por definir',
+    venue: 'Arrowhead Stadium', city: 'Kansas City', country: 'USA',
+    utcDate: '2026-07-05T22:00:00Z', status: 'upcoming',
+  },
+  {
+    id: 'R32-14', phase: 'round-of-32', matchNumber: 86,
+    homeTeam: 'Por definir', awayTeam: 'Por definir',
+    venue: 'SoFi Stadium', city: 'Los Ángeles', country: 'USA',
+    utcDate: '2026-07-06T02:00:00Z', status: 'upcoming',
+  },
+  {
+    id: 'R32-15', phase: 'round-of-32', matchNumber: 87,
+    homeTeam: 'Por definir', awayTeam: 'Por definir',
+    venue: 'Lumen Field', city: 'Seattle', country: 'USA',
+    utcDate: '2026-07-06T22:00:00Z', status: 'upcoming',
+  },
+  {
+    id: 'R32-16', phase: 'round-of-32', matchNumber: 88,
+    homeTeam: 'Por definir', awayTeam: 'Por definir',
+    venue: 'Empower Field at Mile High', city: 'Denver', country: 'USA',
+    utcDate: '2026-07-07T02:00:00Z', status: 'upcoming',
+  },
+
+  // ══════════════════════════════════════════════════════════════════════
+  //  OCTAVOS DE FINAL — Partidos 89–96 (Jul 8–11)
+  // ══════════════════════════════════════════════════════════════════════
+  {
+    id: 'R16-1', phase: 'round-of-16', matchNumber: 89,
+    homeTeam: 'Por definir', awayTeam: 'Por definir',
+    venue: 'MetLife Stadium', city: 'East Rutherford', country: 'USA',
+    utcDate: '2026-07-08T22:00:00Z', status: 'upcoming',
+  },
+  {
+    id: 'R16-2', phase: 'round-of-16', matchNumber: 90,
+    homeTeam: 'Por definir', awayTeam: 'Por definir',
+    venue: 'AT&T Stadium', city: 'Arlington', country: 'USA',
+    utcDate: '2026-07-09T02:00:00Z', status: 'upcoming',
+  },
+  {
+    id: 'R16-3', phase: 'round-of-16', matchNumber: 91,
+    homeTeam: 'Por definir', awayTeam: 'Por definir',
+    venue: 'Estadio Azteca', city: 'Ciudad de México', country: 'Mexico',
+    utcDate: '2026-07-09T22:00:00Z', status: 'upcoming',
+  },
+  {
+    id: 'R16-4', phase: 'round-of-16', matchNumber: 92,
+    homeTeam: 'Por definir', awayTeam: 'Por definir',
+    venue: 'Hard Rock Stadium', city: 'Miami Gardens', country: 'USA',
+    utcDate: '2026-07-10T02:00:00Z', status: 'upcoming',
+  },
+  {
+    id: 'R16-5', phase: 'round-of-16', matchNumber: 93,
+    homeTeam: 'Por definir', awayTeam: 'Por definir',
+    venue: "Levi's Stadium", city: 'Santa Clara', country: 'USA',
+    utcDate: '2026-07-10T22:00:00Z', status: 'upcoming',
+  },
+  {
+    id: 'R16-6', phase: 'round-of-16', matchNumber: 94,
+    homeTeam: 'Por definir', awayTeam: 'Por definir',
+    venue: 'Rose Bowl', city: 'Los Ángeles', country: 'USA',
+    utcDate: '2026-07-11T02:00:00Z', status: 'upcoming',
+  },
+  {
+    id: 'R16-7', phase: 'round-of-16', matchNumber: 95,
+    homeTeam: 'Por definir', awayTeam: 'Por definir',
+    venue: 'Arrowhead Stadium', city: 'Kansas City', country: 'USA',
+    utcDate: '2026-07-11T22:00:00Z', status: 'upcoming',
+  },
+  {
+    id: 'R16-8', phase: 'round-of-16', matchNumber: 96,
+    homeTeam: 'Por definir', awayTeam: 'Por definir',
+    venue: 'Mercedes-Benz Stadium', city: 'Atlanta', country: 'USA',
+    utcDate: '2026-07-12T02:00:00Z', status: 'upcoming',
+  },
+
+  // ══════════════════════════════════════════════════════════════════════
+  //  CUARTOS DE FINAL — Partidos 97–100 (Jul 14–15)
+  // ══════════════════════════════════════════════════════════════════════
+  {
+    id: 'QF-1', phase: 'quarter-final', matchNumber: 97,
+    homeTeam: 'Por definir', awayTeam: 'Por definir',
+    venue: 'MetLife Stadium', city: 'East Rutherford', country: 'USA',
+    utcDate: '2026-07-14T22:00:00Z', status: 'upcoming',
+  },
+  {
+    id: 'QF-2', phase: 'quarter-final', matchNumber: 98,
+    homeTeam: 'Por definir', awayTeam: 'Por definir',
+    venue: 'AT&T Stadium', city: 'Arlington', country: 'USA',
+    utcDate: '2026-07-15T02:00:00Z', status: 'upcoming',
+  },
+  {
+    id: 'QF-3', phase: 'quarter-final', matchNumber: 99,
+    homeTeam: 'Por definir', awayTeam: 'Por definir',
+    venue: 'Rose Bowl', city: 'Los Ángeles', country: 'USA',
+    utcDate: '2026-07-15T22:00:00Z', status: 'upcoming',
+  },
+  {
+    id: 'QF-4', phase: 'quarter-final', matchNumber: 100,
+    homeTeam: 'Por definir', awayTeam: 'Por definir',
+    venue: 'Hard Rock Stadium', city: 'Miami Gardens', country: 'USA',
+    utcDate: '2026-07-16T02:00:00Z', status: 'upcoming',
+  },
+
+  // ══════════════════════════════════════════════════════════════════════
+  //  SEMIFINALES — Partidos 101–102 (Jul 18–19)
+  // ══════════════════════════════════════════════════════════════════════
+  {
+    id: 'SF-1', phase: 'semi-final', matchNumber: 101,
+    homeTeam: 'Por definir', awayTeam: 'Por definir',
+    venue: 'MetLife Stadium', city: 'East Rutherford', country: 'USA',
+    utcDate: '2026-07-18T23:00:00Z', status: 'upcoming',
+  },
+  {
+    id: 'SF-2', phase: 'semi-final', matchNumber: 102,
+    homeTeam: 'Por definir', awayTeam: 'Por definir',
+    venue: 'Rose Bowl', city: 'Los Ángeles', country: 'USA',
+    utcDate: '2026-07-19T23:00:00Z', status: 'upcoming',
+  },
+
+  // ══════════════════════════════════════════════════════════════════════
+  //  TERCER LUGAR — Partido 103 (Jul 18)
+  // ══════════════════════════════════════════════════════════════════════
+  {
+    id: 'TP', phase: 'third-place', matchNumber: 103,
+    homeTeam: 'Por definir', awayTeam: 'Por definir',
+    venue: 'AT&T Stadium', city: 'Arlington', country: 'USA',
+    utcDate: '2026-07-18T19:00:00Z', status: 'upcoming',
+  },
+
+  // ══════════════════════════════════════════════════════════════════════
+  //  GRAN FINAL — Partido 104 (Jul 19)
+  // ══════════════════════════════════════════════════════════════════════
+  {
+    id: 'FINAL', phase: 'final', matchNumber: 104,
+    homeTeam: 'Por definir', awayTeam: 'Por definir',
+    venue: 'MetLife Stadium', city: 'East Rutherford', country: 'USA',
+    utcDate: '2026-07-19T23:00:00Z', status: 'upcoming',
+  },
+
 ];
