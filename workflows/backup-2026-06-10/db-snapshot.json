@@ -1,0 +1,65 @@
+{
+  "activos": "4",
+  "bajas": "1",
+  "total": "5",
+  "pagados": "0",
+  "telegram": "2",
+  "whatsapp": "3",
+  "suscriptores": [
+    {
+      "id": 19,
+      "name": "",
+      "phone": "50376887059",
+      "platform": "whatsapp",
+      "country": "SV",
+      "active": true,
+      "paid": false,
+      "demo_only": true,
+      "subscribed_at": "2026-06-10T16:50:15.996079+00:00"
+    },
+    {
+      "id": 16,
+      "name": "",
+      "phone": "50375869016",
+      "platform": "whatsapp",
+      "country": "SV",
+      "active": true,
+      "paid": false,
+      "demo_only": true,
+      "subscribed_at": "2026-06-10T15:11:06.429433+00:00"
+    },
+    {
+      "id": 13,
+      "name": "Erick Marin",
+      "phone": "50377420672",
+      "platform": "whatsapp",
+      "country": "El Salvador",
+      "active": true,
+      "paid": false,
+      "demo_only": true,
+      "subscribed_at": "2026-06-10T04:29:21.559133+00:00"
+    },
+    {
+      "id": 12,
+      "name": "Rod Mundi",
+      "phone": "50360883037",
+      "platform": "telegram",
+      "country": "El Salvador",
+      "active": true,
+      "paid": false,
+      "demo_only": true,
+      "subscribed_at": "2026-06-10T04:28:46.406098+00:00"
+    },
+    {
+      "id": 11,
+      "name": "Milton Siguenza",
+      "phone": "50377420802",
+      "platform": "telegram",
+      "country": "El Salvador",
+      "active": false,
+      "paid": false,
+      "demo_only": true,
+      "subscribed_at": "2026-06-10T04:28:19.735477+00:00"
+    }
+  ]
+}

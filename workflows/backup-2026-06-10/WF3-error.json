@@ -1,0 +1,169 @@
+{
+  "updatedAt": "2026-06-10T04:59:34.101Z",
+  "createdAt": "2026-06-10T04:33:49.672Z",
+  "id": "EsaoKCXpD3TZMCje",
+  "name": "Mundial — Alertas de Error",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "err_trigger",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        100,
+        200
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "err_notify",
+      "name": "Notificar por Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        340,
+        200
+      ],
+      "parameters": {
+        "chatId": "675855669",
+        "text": "={{ `⚠️ *ERROR en workflow Mundial*\\n\\nWorkflow: ${$json.workflow.name}\\nNodo: ${$json.execution.error.node?.name || 'desconocido'}\\nError: ${$json.execution.error.message}\\n\\nVer: https://n8n.95.216.212.187.sslip.io/workflow/${$json.workflow.id}` }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "Markdown"
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "yovv0GvglRF0YNLq",
+          "name": "Telegram Bot Mundial 2026"
+        }
+      },
+      "webhookId": "4d7827a2-fb72-467b-8b9b-14527fe7bb6d"
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Notificar por Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": null,
+  "versionId": "efd63829-2db5-403a-8366-12081dae5cd2",
+  "activeVersionId": "efd63829-2db5-403a-8366-12081dae5cd2",
+  "versionCounter": 6,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-06-10T04:33:49.674Z",
+      "createdAt": "2026-06-10T04:33:49.674Z",
+      "role": "workflow:owner",
+      "workflowId": "EsaoKCXpD3TZMCje",
+      "projectId": "g2T64qb4JyW1mWdT",
+      "project": {
+        "updatedAt": "2026-03-23T02:01:06.896Z",
+        "createdAt": "2026-03-23T01:54:43.748Z",
+        "id": "g2T64qb4JyW1mWdT",
+        "name": "Erick RODAI <admin@rodai.io>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "111326d0-ca57-4427-a4d0-5c6508637090"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-06-10T04:59:34.102Z",
+    "createdAt": "2026-06-10T04:59:34.102Z",
+    "versionId": "efd63829-2db5-403a-8366-12081dae5cd2",
+    "workflowId": "EsaoKCXpD3TZMCje",
+    "nodes": [
+      {
+        "id": "err_trigger",
+        "name": "Error Trigger",
+        "type": "n8n-nodes-base.errorTrigger",
+        "typeVersion": 1,
+        "position": [
+          100,
+          200
+        ],
+        "parameters": {}
+      },
+      {
+        "id": "err_notify",
+        "name": "Notificar por Telegram",
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          340,
+          200
+        ],
+        "parameters": {
+          "chatId": "675855669",
+          "text": "={{ `⚠️ *ERROR en workflow Mundial*\\n\\nWorkflow: ${$json.workflow.name}\\nNodo: ${$json.execution.error.node?.name || 'desconocido'}\\nError: ${$json.execution.error.message}\\n\\nVer: https://n8n.95.216.212.187.sslip.io/workflow/${$json.workflow.id}` }}",
+          "additionalFields": {
+            "appendAttribution": false,
+            "parse_mode": "Markdown"
+          }
+        },
+        "credentials": {
+          "telegramApi": {
+            "id": "yovv0GvglRF0YNLq",
+            "name": "Telegram Bot Mundial 2026"
+          }
+        },
+        "webhookId": "4d7827a2-fb72-467b-8b9b-14527fe7bb6d"
+      }
+    ],
+    "connections": {
+      "Error Trigger": {
+        "main": [
+          [
+            {
+              "node": "Notificar por Telegram",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Erick RODAI",
+    "name": null,
+    "description": null,
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-06-10T04:59:34.155Z",
+        "id": 1906,
+        "workflowId": "EsaoKCXpD3TZMCje",
+        "versionId": "efd63829-2db5-403a-8366-12081dae5cd2",
+        "event": "activated",
+        "userId": "111326d0-ca57-4427-a4d0-5c6508637090"
+      },
+      {
+        "createdAt": "2026-06-10T04:59:34.141Z",
+        "id": 1905,
+        "workflowId": "EsaoKCXpD3TZMCje",
+        "versionId": "efd63829-2db5-403a-8366-12081dae5cd2",
+        "event": "deactivated",
+        "userId": "111326d0-ca57-4427-a4d0-5c6508637090"
+      }
+    ]
+  }
+}

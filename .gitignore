@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# project memory & local tools (contain credentials — never commit)
+SESSION_MEMORY.json
+.agents/
+.kapso/
+skills-lock.json

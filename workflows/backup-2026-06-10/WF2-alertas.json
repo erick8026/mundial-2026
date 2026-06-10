@@ -1,0 +1,5235 @@
+{
+  "updatedAt": "2026-06-10T16:08:21.615Z",
+  "createdAt": "2026-06-09T20:23:14.537Z",
+  "id": "eArw5zghtsxxaoCn",
+  "name": "🏆 Mundial 2026 — Alertas v6 (7 tipos)",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "c1_cron",
+      "name": "Cron Live",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "*/2 * * * *"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "c1_api",
+      "name": "API Live",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        0
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ 'https://v3.football.api-sports.io/fixtures?date=' + $now.toFormat('yyyy-MM-dd') + '&season=2026&status=1H-2H-HT-ET-BT-P' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "0O1iRnWh7lP5isWW",
+          "name": "API-Football Mundial 2026"
+        }
+      }
+    },
+    {
+      "id": "c1_js",
+      "name": "JS Live",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        0
+      ],
+      "parameters": {
+        "jsCode": "\nconst data     = $input.first().json;\nconst fixtures = data.response || [];\nconst sd       = $getWorkflowStaticData('node');\nconst globalSd = $getWorkflowStaticData('global');\nconst events   = [];\n\nconst FLAGS = {\n  'Mexico':'🇲🇽','México':'🇲🇽','South Africa':'🇿🇦','Sudáfrica':'🇿🇦',\n  'Spain':'🇪🇸','España':'🇪🇸','Peru':'🇵🇪','Perú':'🇵🇪',\n  'Brazil':'🇧🇷','Brasil':'🇧🇷','Argentina':'🇦🇷','Germany':'🇩🇪','Alemania':'🇩🇪',\n  'France':'🇫🇷','Francia':'🇫🇷','England':'🏴󠁧󠁢󠁥󠁮󠁧󠁿','Portugal':'🇵🇹',\n  'Netherlands':'🇳🇱','Belgium':'🇧🇪','Bélgica':'🇧🇪',\n  'Italy':'🇮🇹','Italia':'🇮🇹','Croatia':'🇭🇷','Croacia':'🇭🇷',\n  'Uruguay':'🇺🇾','Colombia':'🇨🇴','Chile':'🇨🇱','Ecuador':'🇪🇨',\n  'USA':'🇺🇸','United States':'🇺🇸','Canada':'🇨🇦','Canadá':'🇨🇦',\n  'Japan':'🇯🇵','Japón':'🇯🇵','South Korea':'🇰🇷','Korea Republic':'🇰🇷',\n  'Morocco':'🇲🇦','Marruecos':'🇲🇦','Senegal':'🇸🇳',\n  'Saudi Arabia':'🇸🇦','Arabia Saudita':'🇸🇦',\n  'Qatar':'🇶🇦','Iran':'🇮🇷','Australia':'🇦🇺','Poland':'🇵🇱','Polonia':'🇵🇱',\n  'Switzerland':'🇨🇭','Suiza':'🇨🇭','Denmark':'🇩🇰','Dinamarca':'🇩🇰',\n  'Serbia':'🇷🇸','Ukraine':'🇺🇦','Ucrania':'🇺🇦','Tunisia':'🇹🇳','Túnez':'🇹🇳',\n  'Nigeria':'🇳🇬','Ghana':'🇬🇭','Cameroon':'🇨🇲','Camerún':'🇨🇲',\n  'Costa Rica':'🇨🇷','Panama':'🇵🇦','Panamá':'🇵🇦','Honduras':'🇭🇳',\n  'El Salvador':'🇸🇻','Guatemala':'🇬🇹','Bolivia':'🇧🇴','Paraguay':'🇵🇾',\n  'Venezuela':'🇻🇪','Indonesia':'🇮🇩','New Zealand':'🇳🇿',\n  'Vanuatu':'🇻🇺','Fiji':'🇫🇯','Philippines':'🇵🇭','Thailand':'🇹🇭',\n  'China':'🇨🇳','India':'🇮🇳','UAE':'🇦🇪','Russia':'🇷🇺',\n  'Hungary':'🇭🇺','Romania':'🇷🇴','Greece':'🇬🇷','Turkey':'🇹🇷',\n  'Scotland':'🏴󠁧󠁢󠁳󠁣󠁴󠁿','Wales':'🏴󠁧󠁢󠁷󠁬󠁳󠁿','Ireland':'🇮🇪','Republic of Ireland':'🇮🇪',\n  'Austria':'🇦🇹','Sweden':'🇸🇪','Norway':'🇳🇴','Finland':'🇫🇮',\n  'Czech Republic':'🇨🇿','Slovakia':'🇸🇰','Slovenia':'🇸🇮',\n  'North Macedonia':'🇲🇰','Albania':'🇦🇱','Montenegro':'🇲🇪',\n  'Azerbaijan':'🇦🇿','Georgia':'🇬🇪','Armenia':'🇦🇲','Belarus':'🇧🇾',\n  'Kazakhstan':'🇰🇿','Lithuania':'🇱🇹','Latvia':'🇱🇻','Estonia':'🇪🇪',\n  'Angola':'🇦🇴','Togo':'🇹🇬','Benin':'🇧🇯','Liberia':'🇱🇷',\n  'Congo DR':'🇨🇩','Ethiopia':'🇪🇹','Rwanda':'🇷🇼','Kenya':'🇰🇪',\n  'Zimbabwe':'🇿🇼','Zambia':'🇿🇲','Botswana':'🇧🇼',\n  'Sierra Leone':'🇸🇱','Mauritania':'🇲🇷','Myanmar':'🇲🇲',\n  'Cambodia':'🇰🇭','Hong Kong':'🇭🇰','Syria':'🇸🇾','Iraq':'🇮🇶',\n  'Jordan':'🇯🇴','Kuwait':'🇰🇼','Bahrain':'🇧🇭','Oman':'🇴🇲'\n};\n\nfunction flag(name) { return FLAGS[name] || '⚽'; }\n\nfunction minStr(e) {\n  const extra = e.time?.extra;\n  return extra ? `${e.time.elapsed}+${extra}'` : `${e.time?.elapsed || 0}'`;\n}\n\nfunction expandName(fixtureId, name) {\n  if (!name) return name;\n  const nm = globalSd[`nm_${fixtureId}`] || {};\n  return nm[name] || name;\n}\n\n// ── Narrativa compacta (1-2 frases) ──────────────────────────────────────────\nfunction buildNarrative(scorer, assist, detail, minute, scoring, home, away, hs, as_) {\n  const diff   = Math.abs(hs - as_);\n  const isLocal = scoring === home;\n  const team   = isLocal ? 'local' : 'visitante';\n  let accion;\n  if (detail === 'Header')\n    accion = assist\n      ? `Centro de ${assist} y ${scorer} conecta de cabeza sin dar opción al portero.`\n      : `${scorer} se anticipa en el área y convierte de cabeza con instinto goleador.`;\n  else if (detail === 'Penalty')\n    accion = `${scorer} ejecuta el penal con total frialdad y no falla desde los doce pasos.`;\n  else if (detail === 'Free Kick' || detail === 'Freekick')\n    accion = `${scorer} cobra el tiro libre con maestría y la pelota se clava en la escuadra.`;\n  else if (detail === 'Own Goal')\n    accion = `Desafortunado desvío en propia puerta que sentencia la jugada.`;\n  else\n    accion = assist\n      ? `${assist} asiste y ${scorer} define con precisión ante el arquero rival.`\n      : `${scorer} recibe, se acomoda y dispara inapelable para el portero.`;\n\n  let contexto;\n  if (minute <= 10)           contexto = `El gol tempranero obliga al rival a replantear desde el inicio.`;\n  else if (minute >= 86)      contexto = `Golazo sobre la bocina que puede ser definitivo.`;\n  else if (hs === as_)        contexto = `El marcador queda igualado y todo se decide en los minutos que restan.`;\n  else if (diff === 1 && hs + as_ === 1) contexto = `Se abre el marcador y el partido entra en una nueva dimensión.`;\n  else if (minute >= 70 && diff === 1) contexto = `Gol que puede ser el de la victoria en la recta final.`;\n  else if (diff >= 3)         contexto = `El dominio del equipo ${team} queda reflejado en el marcador.`;\n  else                        contexto = `El equipo ${team} amplía la ventaja y administra el partido.`;\n  return `${accion} ${contexto}`;\n}\n\nfunction contextLabel(minute, hs, as_, detail) {\n  if (detail === 'Own Goal')  return null;\n  if (minute <= 10)           return '🚀 Gol tempranero';\n  if (minute >= 86)           return '🔥 Gol sobre la bocina';\n  if (hs === as_)             return '🔄 Gol del empate';\n  const diff = Math.abs(hs - as_);\n  if (diff === 1 && hs + as_ === 1) return '🔓 Se abre el marcador';\n  if (minute >= 70 && diff === 1)   return '🏆 Gol decisivo';\n  if (diff >= 3)                    return '📈 Goleada en camino';\n  return '⚡ El marcador se mueve';\n}\n\nfunction goalLine(e, fid) {\n  const f      = flag(e.team?.name || '');\n  const isOG   = e.detail === 'Own Goal';\n  const isPen  = e.detail === 'Penalty';\n  const player = expandName(fid, e.player?.name) || '?';\n  const assist = expandName(fid, e.assist?.name);\n  const min    = minStr(e);\n  let line = isOG ? `😬 ${player}  ${min}  · OG` : `${f} ${player}  ${min}${isPen ? '  · Pen' : ''}`;\n  if (assist) line += `\\n🅰 ${assist}`;\n  return line;\n}\n\nfunction mvp(goals, fid) {\n  const c = {};\n  for (const g of goals) {\n    if (g.detail === 'Own Goal') continue;\n    const p = expandName(fid, g.player?.name), a = expandName(fid, g.assist?.name);\n    if (p) c[p] = (c[p] || 0) + 2;\n    if (a) c[a] = (c[a] || 0) + 1;\n  }\n  const s = Object.entries(c).sort((a,b) => b[1] - a[1]);\n  return s.length ? s[0][0] : null;\n}\n\nconst ALLOWED_L = [1, 10];\n\nfor (const fix of fixtures) {\n  if (!ALLOWED_L.includes(fix.league?.id)) continue;\n\n  const id      = String(fix.fixture.id);\n  const status  = fix.fixture.status?.short || '';\n  const elapsed = fix.fixture.status?.elapsed || 0;\n  const home    = fix.teams?.home?.name  || 'Local';\n  const away    = fix.teams?.away?.name  || 'Visitante';\n  const fH      = flag(home);\n  const fA      = flag(away);\n  const hs      = fix.goals?.home  ?? 0;\n  const as_     = fix.goals?.away  ?? 0;\n  const venue   = fix.fixture?.venue?.name || '';\n  const league  = fix.league?.name || 'Internacional';\n  const fixEvts = fix.events || [];\n\n  const prev = sd[id] || {\n    hs:0, as_:0, status:'NS',\n    kickoffSent:false, lineupSent:false,\n    htSent:false, h2Sent:false, ftSent:false\n  };\n\n  // ── Marcador inline ────────────────────────────────────────────────────────\n  const score = `${fH} ${home}  ${hs} – ${as_}  ${away} ${fA}`;\n\n  // ── 1. KICKOFF ─────────────────────────────────────────────────────────────\n  if (status === '1H' && !['1H','2H','HT','ET'].includes(prev.status) && !prev.kickoffSent) {\n    const lines = [\n      '🟢 ¡PARTIDO INICIADO!',\n      '',\n      `${fH} ${home}  0 – 0  ${away} ${fA}`,\n      '',\n      `📅 ${league}`,\n      venue ? `🏟 ${venue}` : null,\n      '',\n      '⏱ En curso  ·  #RODAI Sport'\n    ].filter(l => l !== null);\n    const msg = lines.join('\\n');\n    events.push({ partido_id:id, tipo:'kickoff', detalle:`ko_${id}`,\n      home, away, venue, elapsed:0, msg_wa:msg, msg_tg:msg });\n  }\n\n  // ── 2. ALINEACIONES ────────────────────────────────────────────────────────\n  if (status === '1H' && elapsed >= 1 && elapsed <= 5 && !prev.lineupSent) {\n    events.push({ partido_id:id, tipo:'lineup', detalle:`lu_${id}`,\n      home, away, venue, elapsed,\n      msg_wa:'LINEUP_PENDING', msg_tg:'LINEUP_PENDING' });\n  }\n\n  // ── 3. GOLES ───────────────────────────────────────────────────────────────\n  if ((hs > prev.hs || as_ > prev.as_) && ['1H','2H','ET'].includes(status)) {\n    const goalEvts = fixEvts.filter(e => e.type === 'Goal');\n    const last     = goalEvts[goalEvts.length - 1] || {};\n    const scoring  = last.team?.name || (hs > prev.hs ? home : away);\n    const scorer   = expandName(id, last.player?.name) || '?';\n    const assist   = expandName(id, last.assist?.name) || null;\n    const detail   = last.detail || 'Normal Goal';\n    const goalMin  = last.time?.elapsed || elapsed;\n    const extra    = last.time?.extra || null;\n    const minFull  = extra ? `${goalMin}+${extra}'` : `${goalMin}'`;\n    const isOG     = detail === 'Own Goal';\n    const isPen    = detail === 'Penalty';\n    const narrative = buildNarrative(scorer, assist, detail, goalMin, scoring, home, away, hs, as_);\n    const ctxLabel  = contextLabel(goalMin, hs, as_, detail);\n    const fScoring  = flag(scoring);\n\n    const lines = [\n      `🚨 GOOOL DE ${scoring.toUpperCase()}`,\n      '',\n      `${fH} ${home}  ${hs} – ${as_}  ${away} ${fA}`,\n      ''\n    ];\n\n    if (isOG)      lines.push(`😬 ${scorer}  ${minFull}  · OG`);\n    else if (isPen) lines.push(`⚽ ${scorer}  ${minFull}  · Pen`);\n    else            lines.push(`⚽ ${scorer}  ${minFull}`);\n\n    if (assist) lines.push(`🅰 ${assist}`);\n\n    lines.push('', narrative);\n    if (ctxLabel) lines.push('', ctxLabel);\n    lines.push('', `⏱ ${minFull}  ·  #RODAI Sport`);\n\n    const msg = lines.join('\\n');\n    events.push({ partido_id:id, tipo:'goal', detalle:`goal_${id}_${hs}_${as_}`,\n      home, away, msg_wa:msg, msg_tg:msg });\n  }\n\n  // ── 4. FIN PRIMER TIEMPO ───────────────────────────────────────────────────\n  if (status === 'HT' && !prev.htSent) {\n    const goalsHT  = fixEvts.filter(e => e.type==='Goal' && (e.time?.elapsed||0) <= 45);\n    const lines    = [\n      '⏸ DESCANSO',\n      '',\n      `${fH} ${home}  ${hs} – ${as_}  ${away} ${fA}`\n    ];\n    if (goalsHT.length) {\n      lines.push('');\n      goalsHT.forEach(g => lines.push(goalLine(g, id)));\n    }\n    lines.push('', `⏱ Fin del primer tiempo  ·  #RODAI Sport`);\n    events.push({ partido_id:id, tipo:'halftime', detalle:`ht_${id}_${hs}_${as_}`,\n      home, away, msg_wa:lines.join('\\n'), msg_tg:lines.join('\\n') });\n  }\n\n  // ── 5. INICIO 2DO TIEMPO ──────────────────────────────────────────────────\n  if (status === '2H' && prev.status === 'HT' && !prev.h2Sent) {\n    const msg = [\n      '▶️ SEGUNDO TIEMPO',\n      '',\n      `${fH} ${home}  ${hs} – ${as_}  ${away} ${fA}`,\n      '',\n      `⏱ Segunda mitad iniciada  ·  #RODAI Sport`\n    ].join('\\n');\n    events.push({ partido_id:id, tipo:'h2_start', detalle:`h2_${id}`,\n      home, away, msg_wa:msg, msg_tg:msg });\n  }\n\n  // ── 6. RESULTADO FINAL ────────────────────────────────────────────────────\n  if (['FT','AET','PEN'].includes(status) && !prev.ftSent) {\n    const allGoals = fixEvts.filter(e => e.type === 'Goal');\n    const allCards = fixEvts.filter(e => e.type === 'Card');\n    const winner   = hs > as_ ? home : as_ > hs ? away : null;\n    const mvpName  = mvp(allGoals, id);\n\n    const lines = [\n      '🏁 RESULTADO FINAL',\n      '',\n      `${fH} ${home}  ${hs} – ${as_}  ${away} ${fA}`\n    ];\n\n    if (allGoals.length) {\n      lines.push('');\n      allGoals.forEach(g => lines.push(goalLine(g, id)));\n    }\n\n    const yellowCards = allCards.filter(c => c.detail === 'Yellow Card');\n    const redCards    = allCards.filter(c => c.detail === 'Red Card');\n    if (yellowCards.length + redCards.length > 0) {\n      lines.push('');\n      yellowCards.forEach(c => lines.push(`🟨 ${expandName(id, c.player?.name)}  ${minStr(c)}`));\n      redCards.forEach(c => lines.push(`🟥 ${expandName(id, c.player?.name)}  ${minStr(c)}`));\n    }\n\n    lines.push('');\n    if (mvpName) lines.push(`⭐ MVP: ${mvpName}`);\n    lines.push(winner ? `🏆 Ganador: ${winner}` : '🤝 Empate');\n    lines.push('');\n    lines.push(`📅 ${league}  ·  ⏱ Finalizado`);\n    lines.push('#RODAI Sport');\n\n    events.push({ partido_id:id, tipo:'fulltime', detalle:`ft_${id}_${hs}_${as_}`,\n      home, away, msg_wa:lines.join('\\n'), msg_tg:lines.join('\\n') });\n  }\n\n  sd[id] = {\n    hs, as_, status,\n    kickoffSent : prev.kickoffSent || (status==='1H' && !['1H','2H','HT','ET'].includes(prev.status)),\n    lineupSent  : prev.lineupSent  || (status==='1H' && elapsed>=1 && elapsed<=5),\n    htSent      : prev.htSent      || (status==='HT'),\n    h2Sent      : prev.h2Sent      || (status==='2H' && prev.status==='HT'),\n    ftSent      : prev.ftSent      || ['FT','AET','PEN'].includes(status)\n  };\n}\n\nif (!events.length) return [{ json:{ events_count:0 } }];\nreturn events.map(e => ({ json:{ ...e, events_count: events.length } }));\n"
+      }
+    },
+    {
+      "id": "c1_ife",
+      "name": "IF Events Live",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        720,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.events_count }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "c1_lev",
+      "name": "Loop Eventos",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        960,
+        0
+      ],
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      }
+    },
+    {
+      "id": "c1_ifko",
+      "name": "IF Kickoff",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.tipo }}",
+              "rightValue": "lineup",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "c1_prep",
+      "name": "Prep Lineup",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        -100
+      ],
+      "parameters": {
+        "jsCode": "\nconst item = $input.first().json;\nreturn [{ json:{\n  ...item,\n  lineup_url: `https://v3.football.api-sports.io/fixtures/lineups?fixture=${item.partido_id}`\n}}];\n"
+      }
+    },
+    {
+      "id": "c1_htlu",
+      "name": "HTTP Lineups",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1680,
+        -100
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $json.lineup_url }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "0O1iRnWh7lP5isWW",
+          "name": "API-Football Mundial 2026"
+        }
+      }
+    },
+    {
+      "id": "c1_bklu",
+      "name": "Build Lineup",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1920,
+        -100
+      ],
+      "parameters": {
+        "jsCode": "\nconst lineupResp = $input.first().json;\nconst orig       = $('Prep Lineup').first().json;\nconst globalSd   = $getWorkflowStaticData('global');\nconst FLAGS = {\n  'Mexico':'🇲🇽','México':'🇲🇽','South Africa':'🇿🇦','Sudáfrica':'🇿🇦',\n  'Spain':'🇪🇸','Peru':'🇵🇪','Brazil':'🇧🇷','Argentina':'🇦🇷',\n  'Germany':'🇩🇪','France':'🇫🇷','England':'🏴󠁧󠁢󠁥󠁮󠁧󠁿','Portugal':'🇵🇹',\n  'Netherlands':'🇳🇱','Belgium':'🇧🇪','Italy':'🇮🇹','Croatia':'🇭🇷',\n  'Uruguay':'🇺🇾','Colombia':'🇨🇴','Chile':'🇨🇱','USA':'🇺🇸',\n  'United States':'🇺🇸','Canada':'🇨🇦','Japan':'🇯🇵',\n  'South Korea':'🇰🇷','Korea Republic':'🇰🇷','Morocco':'🇲🇦',\n  'Senegal':'🇸🇳','Saudi Arabia':'🇸🇦','Ecuador':'🇪🇨',\n  'Costa Rica':'🇨🇷','Panama':'🇵🇦','Honduras':'🇭🇳',\n  'El Salvador':'🇸🇻','Bolivia':'🇧🇴','Paraguay':'🇵🇾',\n  'Venezuela':'🇻🇪','Australia':'🇦🇺','Poland':'🇵🇱',\n  'Switzerland':'🇨🇭','Denmark':'🇩🇰','Serbia':'🇷🇸',\n  'Ukraine':'🇺🇦','Tunisia':'🇹🇳','Nigeria':'🇳🇬',\n  'Ghana':'🇬🇭','Cameroon':'🇨🇲','Iran':'🇮🇷'\n};\nfunction flag(n) { return FLAGS[n] || '⚽'; }\n\nconst lineups  = lineupResp.response || [];\nconst posOrder = {G:1, D:2, M:3, F:4};\nconst nameMap  = {};\n\nfor (const team of lineups) {\n  const all = [...(team.startXI||[]).map(p=>p.player), ...(team.substitutes||[]).map(p=>p.player)];\n  for (const player of all) {\n    const full = player?.name;\n    if (!full) continue;\n    nameMap[full] = full;\n    const parts = full.trim().split(/\\s+/);\n    if (parts.length >= 2) {\n      const abbrev = parts[0].charAt(0).toUpperCase() + '. ' + parts.slice(1).join(' ');\n      nameMap[abbrev] = full;\n    }\n  }\n}\nglobalSd[`nm_${orig.partido_id}`] = nameMap;\n\nfunction fmtTeam(t) {\n  const f  = flag(t.team?.name || '');\n  const xi = (t.startXI || [])\n    .sort((a,b) => (posOrder[a.player?.pos]||5) - (posOrder[b.player?.pos]||5))\n    .map(p => (nameMap[p.player?.name] || p.player?.name || ''))\n    .filter(Boolean).join('  ·  ');\n  return [`${f} ${t.team?.name} (${t.formation||'?'})  ·  DT: ${t.coach?.name||'?'}`, xi].join('\\n');\n}\n\nlet msg;\nif (!lineups.length) {\n  msg = [\n    '📋 ALINEACIONES',\n    '',\n    `${flag(orig.home)} ${orig.home}  vs  ${orig.away} ${flag(orig.away)}`,\n    '',\n    'Aún no publicadas  ·  #RODAI Sport'\n  ].join('\\n');\n} else {\n  const fH = flag(orig.home), fA = flag(orig.away);\n  msg = [\n    '📋 ALINEACIONES',\n    '',\n    `${fH} ${orig.home}  vs  ${orig.away} ${fA}`,\n    '',\n    fmtTeam(lineups[0]),\n    '',\n    fmtTeam(lineups[1] || lineups[0]),\n    '',\n    '#RODAI Sport'\n  ].join('\\n');\n}\n\nreturn [{ json: { ...orig, msg_wa: msg, msg_tg: msg } }];\n"
+      }
+    },
+    {
+      "id": "pg_subs_KO",
+      "name": "DB Subs KO",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        2160,
+        -100
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT s.phone, s.platform, s.telegram_chat_id,\n  '{{ $json.partido_id }}' AS partido_id,\n  '{{ $json.tipo }}'       AS tipo,\n  '{{ $json.detalle }}'    AS detalle,\n  $msg_wa${{ $json.msg_wa }}$msg_wa$ AS msg_wa,\n  $msg_tg${{ $json.msg_tg }}$msg_tg$ AS msg_tg,\n  COALESCE(sp.image_url,'')  AS sponsor_image,\n  COALESCE(sp.promo_text,'') AS sponsor_promo\nFROM suscriptores s\nLEFT JOIN LATERAL (\n  SELECT image_url, promo_text FROM sponsors\n  WHERE match_id = '{{ $json.partido_id }}' AND active = true LIMIT 1\n) sp ON true\nWHERE s.active = true AND (s.paid = true OR s.demo_only = true)",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "lZiJmyplRgdvifzN",
+          "name": "PG Local RODAI"
+        }
+      }
+    },
+    {
+      "id": "lp_sub_KO",
+      "name": "Loop Subs KO",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2400,
+        -100
+      ],
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      }
+    },
+    {
+      "id": "rec_KO",
+      "name": "Recover KO",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2640,
+        -100
+      ],
+      "parameters": {
+        "jsCode": "const sub   = $('Loop Subs KO').first().json;\nconst promo = sub.sponsor_promo || '';\nconst image = sub.sponsor_image || '';\n\nconst waFinal = promo ? sub.msg_wa + '\\n\\n' + promo : sub.msg_wa;\nconst tgFinal = sub.msg_tg;\n\nconst waPayload = {\n  messaging_product:'whatsapp', recipient_type:'individual',\n  to: sub.phone, type:'text', text:{ body: waFinal }\n};\nreturn [{ json:{\n  phone: sub.phone, platform: sub.platform,\n  telegram_chat_id: sub.telegram_chat_id,\n  partido_id: sub.partido_id, tipo: sub.tipo, detalle: sub.detalle,\n  msg_tg: tgFinal, sponsor_image: image, sponsor_promo: promo,\n  wa_body: JSON.stringify(waPayload)\n} }];"
+      }
+    },
+    {
+      "id": "ins_KO",
+      "name": "INSERT KO",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        2880,
+        -100
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH ins AS (\n  INSERT INTO alertas_enviadas (phone, partido_id, tipo, detalle, enviado_at)\n  VALUES ('{{ $json.phone }}','{{ $json.partido_id }}','{{ $json.tipo }}','{{ $json.detalle }}',NOW())\n  ON CONFLICT DO NOTHING\n  RETURNING id\n)\nSELECT COALESCE((SELECT id FROM ins), -1) AS id",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "lZiJmyplRgdvifzN",
+          "name": "PG Local RODAI"
+        }
+      }
+    },
+    {
+      "id": "ifn_KO",
+      "name": "IF New KO",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        3120,
+        -100
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": -1,
+              "operator": {
+                "type": "number",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "rtr_KO",
+      "name": "Router KO",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        3360,
+        -100
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $('Recover KO').first().json.platform }}",
+              "rightValue": "telegram",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "tg_KO",
+      "name": "TG KO",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        3600,
+        -220
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "={{ $('Recover KO').first().json.telegram_chat_id }}",
+        "text": "={{ $('Recover KO').first().json.msg_tg }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "yovv0GvglRF0YNLq",
+          "name": "Telegram Bot Mundial 2026"
+        }
+      },
+      "webhookId": "69217b0c-3970-40b1-abae-e986c79d5ef1"
+    },
+    {
+      "id": "wa_KO",
+      "name": "WA KO",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3600,
+        20
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kapso.ai/meta/whatsapp/v24.0/1365226796664715/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-Key",
+              "value": "0a46b374ad7dd08b8b3f0e2713fba33de1724d02879f5fd43c431b8bb621b984"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "string",
+        "body": "={{ $json.wa_body }}",
+        "options": {}
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "ifsp_KO",
+      "name": "IF Sponsor KO",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        3840,
+        -220
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.sponsor_image }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "tgph_KO",
+      "name": "TG Photo KO",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        4080,
+        -220
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "sendPhoto",
+        "chatId": "={{ $('Recover KO').first().json.telegram_chat_id }}",
+        "file": "={{ $('Recover KO').first().json.sponsor_image }}",
+        "additionalFields": {
+          "caption": "={{ $('Recover KO').first().json.sponsor_promo }}",
+          "appendAttribution": false
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "yovv0GvglRF0YNLq",
+          "name": "Telegram Bot Mundial 2026"
+        }
+      },
+      "webhookId": "bd3636d1-da08-4e6c-a3f3-260b62d92dcd"
+    },
+    {
+      "id": "pg_subs_EVT",
+      "name": "DB Subs EVT",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1440,
+        200
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT s.phone, s.platform, s.telegram_chat_id,\n  '{{ $json.partido_id }}' AS partido_id,\n  '{{ $json.tipo }}'       AS tipo,\n  '{{ $json.detalle }}'    AS detalle,\n  $msg_wa${{ $json.msg_wa }}$msg_wa$ AS msg_wa,\n  $msg_tg${{ $json.msg_tg }}$msg_tg$ AS msg_tg,\n  COALESCE(sp.image_url,'')  AS sponsor_image,\n  COALESCE(sp.promo_text,'') AS sponsor_promo\nFROM suscriptores s\nLEFT JOIN LATERAL (\n  SELECT image_url, promo_text FROM sponsors\n  WHERE match_id = '{{ $json.partido_id }}' AND active = true LIMIT 1\n) sp ON true\nWHERE s.active = true AND (s.paid = true OR s.demo_only = true)",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "lZiJmyplRgdvifzN",
+          "name": "PG Local RODAI"
+        }
+      }
+    },
+    {
+      "id": "lp_sub_EVT",
+      "name": "Loop Subs EVT",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1680,
+        200
+      ],
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      }
+    },
+    {
+      "id": "rec_EVT",
+      "name": "Recover EVT",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1920,
+        200
+      ],
+      "parameters": {
+        "jsCode": "const sub    = $('Loop Subs EVT').first().json;\nconst tipo   = sub.tipo;\nconst promo  = sub.sponsor_promo  || '';\nconst image  = sub.sponsor_image  || '';\n\n// Para goles CON imagen de sponsor: una sola alerta (foto + caption)\nconst useSinglePhoto = (tipo === 'goal') && !!image;\n\n// Texto final: si es single photo, NO añadir promo al caption (ya va en la foto)\n// Si NO es single photo: promo al final del texto (WA) o foto separada (TG)\nconst waText = (!useSinglePhoto && promo) ? sub.msg_wa + '\\n\\n' + promo : sub.msg_wa;\nconst tgText = sub.msg_tg;  // Telegram siempre limpio\n\n// WhatsApp body\nlet waPayload;\nif (useSinglePhoto) {\n  // Gol + sponsor → imagen con caption (una sola notificación)\n  waPayload = {\n    messaging_product: 'whatsapp', recipient_type: 'individual',\n    to: sub.phone, type: 'image',\n    image: {\n      link: image,\n      caption: (waText + (promo ? '\\n\\n' + promo : '')).slice(0, 1024)\n    }\n  };\n} else {\n  waPayload = {\n    messaging_product: 'whatsapp', recipient_type: 'individual',\n    to: sub.phone, type: 'text', text: { body: waText }\n  };\n}\n\nreturn [{ json: {\n  phone: sub.phone, platform: sub.platform,\n  telegram_chat_id: sub.telegram_chat_id,\n  partido_id: sub.partido_id, tipo: sub.tipo, detalle: sub.detalle,\n  msg_tg: tgText,\n  tg_caption: (tgText + (promo ? '\\n\\n' + promo : '')).slice(0, 1024),\n  sponsor_image: image, sponsor_promo: promo,\n  use_single_photo: useSinglePhoto ? 'yes' : 'no',\n  wa_body: JSON.stringify(waPayload)\n} }];"
+      }
+    },
+    {
+      "id": "ins_EVT",
+      "name": "INSERT EVT",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        2160,
+        200
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH ins AS (\n  INSERT INTO alertas_enviadas (phone, partido_id, tipo, detalle, enviado_at)\n  VALUES ('{{ $json.phone }}','{{ $json.partido_id }}','{{ $json.tipo }}','{{ $json.detalle }}',NOW())\n  ON CONFLICT DO NOTHING\n  RETURNING id\n)\nSELECT COALESCE((SELECT id FROM ins), -1) AS id",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "lZiJmyplRgdvifzN",
+          "name": "PG Local RODAI"
+        }
+      }
+    },
+    {
+      "id": "ifn_EVT",
+      "name": "IF New EVT",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2400,
+        200
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": -1,
+              "operator": {
+                "type": "number",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "rtr_EVT",
+      "name": "Router EVT",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2640,
+        200
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $('Recover EVT').first().json.platform }}",
+              "rightValue": "telegram",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "tg_EVT",
+      "name": "TG EVT",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2880,
+        80
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "={{ $('Recover EVT').first().json.telegram_chat_id }}",
+        "text": "={{ $('Recover EVT').first().json.msg_tg }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "yovv0GvglRF0YNLq",
+          "name": "Telegram Bot Mundial 2026"
+        }
+      },
+      "webhookId": "2995a141-d142-457e-8df3-3f25ebf88beb"
+    },
+    {
+      "id": "wa_EVT",
+      "name": "WA EVT",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2880,
+        320
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kapso.ai/meta/whatsapp/v24.0/1365226796664715/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-Key",
+              "value": "0a46b374ad7dd08b8b3f0e2713fba33de1724d02879f5fd43c431b8bb621b984"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "string",
+        "body": "={{ $json.wa_body }}",
+        "options": {}
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "ifsp_EVT",
+      "name": "IF Sponsor EVT",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        3120,
+        80
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.sponsor_image }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "tgph_EVT",
+      "name": "TG Photo EVT",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        3360,
+        80
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "sendPhoto",
+        "chatId": "={{ $('Recover EVT').first().json.telegram_chat_id }}",
+        "file": "={{ $('Recover EVT').first().json.sponsor_image }}",
+        "additionalFields": {
+          "caption": "={{ $('Recover EVT').first().json.msg_tg }}",
+          "appendAttribution": false
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "yovv0GvglRF0YNLq",
+          "name": "Telegram Bot Mundial 2026"
+        }
+      },
+      "webhookId": "8cf69c3f-d882-4aa3-8d61-4420a4a77bf9"
+    },
+    {
+      "id": "c2_cron",
+      "name": "Cron Pre",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        700
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "*/5 * * * *"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "c2_api",
+      "name": "API Hoy",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        700
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ 'https://v3.football.api-sports.io/fixtures?date=' + $now.toFormat('yyyy-MM-dd') + '&season=2026' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "0O1iRnWh7lP5isWW",
+          "name": "API-Football Mundial 2026"
+        }
+      }
+    },
+    {
+      "id": "c2_js",
+      "name": "JS Pre",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        700
+      ],
+      "parameters": {
+        "jsCode": "\nconst data     = $input.first().json;\nconst fixtures = data.response || [];\nconst now      = new Date();\nconst FLAGS = {\n  'Mexico':'🇲🇽','México':'🇲🇽','South Africa':'🇿🇦','Sudáfrica':'🇿🇦',\n  'Spain':'🇪🇸','Peru':'🇵🇪','Brazil':'🇧🇷','Argentina':'🇦🇷',\n  'Germany':'🇩🇪','France':'🇫🇷','England':'🏴󠁧󠁢󠁥󠁮󠁧󠁿','Portugal':'🇵🇹',\n  'Netherlands':'🇳🇱','Belgium':'🇧🇪','Italy':'🇮🇹','Croatia':'🇭🇷',\n  'Uruguay':'🇺🇾','Colombia':'🇨🇴','Chile':'🇨🇱','USA':'🇺🇸',\n  'United States':'🇺🇸','Canada':'🇨🇦','Japan':'🇯🇵',\n  'South Korea':'🇰🇷','Korea Republic':'🇰🇷','Morocco':'🇲🇦',\n  'Senegal':'🇸🇳','Saudi Arabia':'🇸🇦','Ecuador':'🇪🇨',\n  'Costa Rica':'🇨🇷','Panama':'🇵🇦','Honduras':'🇭🇳',\n  'El Salvador':'🇸🇻','Bolivia':'🇧🇴','Paraguay':'🇵🇾',\n  'Venezuela':'🇻🇪','Australia':'🇦🇺','Poland':'🇵🇱',\n  'Switzerland':'🇨🇭','Denmark':'🇩🇰','Serbia':'🇷🇸',\n  'Ukraine':'🇺🇦','Tunisia':'🇹🇳','Nigeria':'🇳🇬',\n  'Ghana':'🇬🇭','Cameroon':'🇨🇲','Iran':'🇮🇷'\n};\nfunction flag(n) { return FLAGS[n] || '⚽'; }\n\nconst out = [];\nfor (const fix of fixtures) {\n  if (![1, 10].includes(fix.league?.id)) continue;\n  const kickoff = new Date(fix.fixture.date);\n  const diffMin = (kickoff - now) / 60000;\n  if (diffMin < 10 || diffMin > 25) continue;\n\n  const home   = fix.teams?.home?.name  || 'Local';\n  const away   = fix.teams?.away?.name  || 'Visitante';\n  const fH     = flag(home);\n  const fA     = flag(away);\n  const venue  = fix.fixture?.venue?.name || '';\n  const league = fix.league?.name || 'Internacional';\n  const id     = String(fix.fixture.id);\n  const cdmx   = new Date(kickoff.getTime() - 6*3600*1000);\n  const hhmm   = cdmx.toISOString().slice(11,16);\n\n  const lines = [\n    '🔔 PRÓXIMO PARTIDO',\n    '',\n    `${fH} ${home}  vs  ${away} ${fA}`,\n    '',\n    `📅 ${league}`,\n    venue ? `🏟 ${venue}  ·  ⏰ ${hhmm} CDMX` : `⏰ ${hhmm} CDMX`,\n    '',\n    '⏳ Faltan 15 minutos  ·  #RODAI Sport'\n  ].filter(l => l !== null);\n\n  const msg = lines.join('\\n');\n  out.push({ partido_id:id, tipo:'prepartido', detalle:`pre_${id}`,\n    home, away, msg_wa:msg, msg_tg:msg });\n}\nif (!out.length) return [{ json:{ events_count:0 } }];\nreturn out.map(e => ({ json:{ ...e, events_count: out.length } }));\n"
+      }
+    },
+    {
+      "id": "c2_ife",
+      "name": "IF Events Pre",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        720,
+        700
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.events_count }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "c2_lev",
+      "name": "Loop Pre",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        960,
+        700
+      ],
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      }
+    },
+    {
+      "id": "pg_subs_PRE",
+      "name": "DB Subs PRE",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1200,
+        700
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT s.phone, s.platform, s.telegram_chat_id,\n  '{{ $json.partido_id }}' AS partido_id,\n  '{{ $json.tipo }}'       AS tipo,\n  '{{ $json.detalle }}'    AS detalle,\n  $msg_wa${{ $json.msg_wa }}$msg_wa$ AS msg_wa,\n  $msg_tg${{ $json.msg_tg }}$msg_tg$ AS msg_tg,\n  COALESCE(sp.image_url,'')  AS sponsor_image,\n  COALESCE(sp.promo_text,'') AS sponsor_promo\nFROM suscriptores s\nLEFT JOIN LATERAL (\n  SELECT image_url, promo_text FROM sponsors\n  WHERE match_id = '{{ $json.partido_id }}' AND active = true LIMIT 1\n) sp ON true\nWHERE s.active = true AND (s.paid = true OR s.demo_only = true)",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "lZiJmyplRgdvifzN",
+          "name": "PG Local RODAI"
+        }
+      }
+    },
+    {
+      "id": "lp_sub_PRE",
+      "name": "Loop Subs PRE",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1440,
+        700
+      ],
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      }
+    },
+    {
+      "id": "rec_PRE",
+      "name": "Recover PRE",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1680,
+        700
+      ],
+      "parameters": {
+        "jsCode": "const sub   = $('Loop Subs PRE').first().json;\nconst promo = sub.sponsor_promo || '';\nconst image = sub.sponsor_image || '';\n\nconst waFinal = promo ? sub.msg_wa + '\\n\\n' + promo : sub.msg_wa;\nconst tgFinal = sub.msg_tg;\n\nconst waPayload = {\n  messaging_product:'whatsapp', recipient_type:'individual',\n  to: sub.phone, type:'text', text:{ body: waFinal }\n};\nreturn [{ json:{\n  phone: sub.phone, platform: sub.platform,\n  telegram_chat_id: sub.telegram_chat_id,\n  partido_id: sub.partido_id, tipo: sub.tipo, detalle: sub.detalle,\n  msg_tg: tgFinal, sponsor_image: image, sponsor_promo: promo,\n  wa_body: JSON.stringify(waPayload)\n} }];"
+      }
+    },
+    {
+      "id": "ins_PRE",
+      "name": "INSERT PRE",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1920,
+        700
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH ins AS (\n  INSERT INTO alertas_enviadas (phone, partido_id, tipo, detalle, enviado_at)\n  VALUES ('{{ $json.phone }}','{{ $json.partido_id }}','{{ $json.tipo }}','{{ $json.detalle }}',NOW())\n  ON CONFLICT DO NOTHING\n  RETURNING id\n)\nSELECT COALESCE((SELECT id FROM ins), -1) AS id",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "lZiJmyplRgdvifzN",
+          "name": "PG Local RODAI"
+        }
+      }
+    },
+    {
+      "id": "ifn_PRE",
+      "name": "IF New PRE",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2160,
+        700
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": -1,
+              "operator": {
+                "type": "number",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "rtr_PRE",
+      "name": "Router PRE",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2400,
+        700
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $('Recover PRE').first().json.platform }}",
+              "rightValue": "telegram",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "tg_PRE",
+      "name": "TG PRE",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2640,
+        580
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "={{ $('Recover PRE').first().json.telegram_chat_id }}",
+        "text": "={{ $('Recover PRE').first().json.msg_tg }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "yovv0GvglRF0YNLq",
+          "name": "Telegram Bot Mundial 2026"
+        }
+      },
+      "webhookId": "efa74ba5-9946-4701-b86d-50c438875934"
+    },
+    {
+      "id": "wa_PRE",
+      "name": "WA PRE",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2640,
+        820
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kapso.ai/meta/whatsapp/v24.0/1365226796664715/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-Key",
+              "value": "0a46b374ad7dd08b8b3f0e2713fba33de1724d02879f5fd43c431b8bb621b984"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "string",
+        "body": "={{ $json.wa_body }}",
+        "options": {}
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "ifsp_PRE",
+      "name": "IF Sponsor PRE",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2880,
+        580
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.sponsor_image }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "tgph_PRE",
+      "name": "TG Photo PRE",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        3120,
+        580
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "sendPhoto",
+        "chatId": "={{ $('Recover PRE').first().json.telegram_chat_id }}",
+        "file": "={{ $('Recover PRE').first().json.sponsor_image }}",
+        "additionalFields": {
+          "caption": "={{ $('Recover PRE').first().json.sponsor_promo }}",
+          "appendAttribution": false
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "yovv0GvglRF0YNLq",
+          "name": "Telegram Bot Mundial 2026"
+        }
+      },
+      "webhookId": "39f92e6c-d263-4a0b-a5c8-840d3f508057"
+    },
+    {
+      "id": "c3_cron",
+      "name": "Cron Daily",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        1300
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 4 * * *"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "c3_api",
+      "name": "API Daily",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        1300
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ 'https://v3.football.api-sports.io/fixtures?date=' + $now.toFormat('yyyy-MM-dd') + '&season=2026' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "0O1iRnWh7lP5isWW",
+          "name": "API-Football Mundial 2026"
+        }
+      }
+    },
+    {
+      "id": "c3_js",
+      "name": "JS Daily",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        1300
+      ],
+      "parameters": {
+        "jsCode": "\nconst data     = $input.first().json;\nconst fixtures = (data.response || []).filter(f => [1,10].includes(f.league?.id));\n\nif (!fixtures.length) return [{ json:{ events_count:0 } }];\n\nconst lines = ['📋 RESUMEN DEL DÍA — Mundial 2026', ''];\nfor (const fix of fixtures) {\n  const h  = fix.teams.home.name, a = fix.teams.away.name;\n  const hs = fix.goals?.home, as_ = fix.goals?.away;\n  const st = fix.fixture.status?.short;\n  if (['FT','AET','PEN'].includes(st))\n    lines.push(`✅ ${h} ${hs}–${as_} ${a}`);\n  else if (['1H','2H','HT','ET'].includes(st))\n    lines.push(`🔴 ${h} ${hs}–${as_} ${a} (en vivo)`);\n  else {\n    const d = new Date(fix.fixture.date);\n    const cdmxH = ((d.getUTCHours() - 6 + 24) % 24).toString().padStart(2,'0');\n    lines.push(`⏰ ${h} vs ${a} (${cdmxH}:00 CDMX)`);\n  }\n}\nlines.push('', '¡Hasta mañana! 🌙');\n\nconst msg = lines.join('\\n');\nreturn [{ json:{\n  events_count:1, partido_id:'daily', tipo:'resumen',\n  detalle:`daily_${new Date().toISOString().slice(0,10)}`,\n  msg_wa: msg.replace('/stop','STOP'),\n  msg_tg: msg\n}}];\n"
+      }
+    },
+    {
+      "id": "c3_ife",
+      "name": "IF Events Daily",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        720,
+        1300
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.events_count }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "c3_lev",
+      "name": "Loop Daily",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        960,
+        1300
+      ],
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      }
+    },
+    {
+      "id": "pg_subs_DAI",
+      "name": "DB Subs DAI",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1200,
+        1300
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT s.phone, s.platform, s.telegram_chat_id,\n  '{{ $json.partido_id }}' AS partido_id,\n  '{{ $json.tipo }}'       AS tipo,\n  '{{ $json.detalle }}'    AS detalle,\n  $msg_wa${{ $json.msg_wa }}$msg_wa$ AS msg_wa,\n  $msg_tg${{ $json.msg_tg }}$msg_tg$ AS msg_tg,\n  COALESCE(sp.image_url,'')  AS sponsor_image,\n  COALESCE(sp.promo_text,'') AS sponsor_promo\nFROM suscriptores s\nLEFT JOIN LATERAL (\n  SELECT image_url, promo_text FROM sponsors\n  WHERE match_id = '{{ $json.partido_id }}' AND active = true LIMIT 1\n) sp ON true\nWHERE s.active = true AND (s.paid = true OR s.demo_only = true)",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "lZiJmyplRgdvifzN",
+          "name": "PG Local RODAI"
+        }
+      }
+    },
+    {
+      "id": "lp_sub_DAI",
+      "name": "Loop Subs DAI",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1440,
+        1300
+      ],
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      }
+    },
+    {
+      "id": "rec_DAI",
+      "name": "Recover DAI",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1680,
+        1300
+      ],
+      "parameters": {
+        "jsCode": "const sub   = $('Loop Subs DAI').first().json;\nconst promo = sub.sponsor_promo || '';\nconst image = sub.sponsor_image || '';\n\nconst waFinal = promo ? sub.msg_wa + '\\n\\n' + promo : sub.msg_wa;\nconst tgFinal = sub.msg_tg;\n\nconst waPayload = {\n  messaging_product:'whatsapp', recipient_type:'individual',\n  to: sub.phone, type:'text', text:{ body: waFinal }\n};\nreturn [{ json:{\n  phone: sub.phone, platform: sub.platform,\n  telegram_chat_id: sub.telegram_chat_id,\n  partido_id: sub.partido_id, tipo: sub.tipo, detalle: sub.detalle,\n  msg_tg: tgFinal, sponsor_image: image, sponsor_promo: promo,\n  wa_body: JSON.stringify(waPayload)\n} }];"
+      }
+    },
+    {
+      "id": "ins_DAI",
+      "name": "INSERT DAI",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1920,
+        1300
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH ins AS (\n  INSERT INTO alertas_enviadas (phone, partido_id, tipo, detalle, enviado_at)\n  VALUES ('{{ $json.phone }}','{{ $json.partido_id }}','{{ $json.tipo }}','{{ $json.detalle }}',NOW())\n  ON CONFLICT DO NOTHING\n  RETURNING id\n)\nSELECT COALESCE((SELECT id FROM ins), -1) AS id",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "lZiJmyplRgdvifzN",
+          "name": "PG Local RODAI"
+        }
+      }
+    },
+    {
+      "id": "ifn_DAI",
+      "name": "IF New DAI",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2160,
+        1300
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": -1,
+              "operator": {
+                "type": "number",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "rtr_DAI",
+      "name": "Router DAI",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2400,
+        1300
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $('Recover DAI').first().json.platform }}",
+              "rightValue": "telegram",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "tg_DAI",
+      "name": "TG DAI",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2640,
+        1180
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "={{ $('Recover DAI').first().json.telegram_chat_id }}",
+        "text": "={{ $('Recover DAI').first().json.msg_tg }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "yovv0GvglRF0YNLq",
+          "name": "Telegram Bot Mundial 2026"
+        }
+      },
+      "webhookId": "4338eeaf-5f24-45a9-ab09-57978a8ee2a1"
+    },
+    {
+      "id": "wa_DAI",
+      "name": "WA DAI",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2640,
+        1420
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kapso.ai/meta/whatsapp/v24.0/1365226796664715/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-Key",
+              "value": "0a46b374ad7dd08b8b3f0e2713fba33de1724d02879f5fd43c431b8bb621b984"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "string",
+        "body": "={{ $json.wa_body }}",
+        "options": {}
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "ifsp_DAI",
+      "name": "IF Sponsor DAI",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2880,
+        1180
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.sponsor_image }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "tgph_DAI",
+      "name": "TG Photo DAI",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        3120,
+        1180
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "sendPhoto",
+        "chatId": "={{ $('Recover DAI').first().json.telegram_chat_id }}",
+        "file": "={{ $('Recover DAI').first().json.sponsor_image }}",
+        "additionalFields": {
+          "caption": "={{ $('Recover DAI').first().json.sponsor_promo }}",
+          "appendAttribution": false
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "yovv0GvglRF0YNLq",
+          "name": "Telegram Bot Mundial 2026"
+        }
+      },
+      "webhookId": "883ee8e1-9e1e-473a-ad0c-b3a9f639649d"
+    },
+    {
+      "id": "if_sg_evt",
+      "name": "IF Single Photo EVT",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2880,
+        80
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "sg1",
+              "leftValue": "={{ $json.use_single_photo }}",
+              "rightValue": "yes",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "tg_sg_evt",
+      "name": "TG Single Photo EVT",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        3120,
+        -20
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "sendPhoto",
+        "chatId": "={{ $('Recover EVT').first().json.telegram_chat_id }}",
+        "file": "={{ $json.sponsor_image }}",
+        "additionalFields": {
+          "caption": "={{ $json.tg_caption }}",
+          "appendAttribution": false
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "yovv0GvglRF0YNLq",
+          "name": "Telegram Bot Mundial 2026"
+        }
+      },
+      "webhookId": "9c00f5cd-b643-4b1c-9781-0c0e6db4117b"
+    },
+    {
+      "id": "ai_prep_evt",
+      "name": "AI Prep EVT",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        420
+      ],
+      "parameters": {
+        "jsCode": "\nconst e = $input.first().json;\nconst tipo = e.tipo || 'evento';\nconst home = e.home || 'Local';\nconst away = e.away || 'Visitante';\nconst hs   = e.hs  !== undefined ? e.hs  : (e.goals?.home  ?? 0);\nconst as_  = e.as_ !== undefined ? e.as_ : (e.goals?.away  ?? 0);\n\nlet promptLines = [`TIPO DE ALERTA: ${tipo.toUpperCase()}`, `Partido: ${home} vs ${away}`, `Marcador: ${home} ${hs} — ${as_} ${away}`];\n\nif (tipo === 'goal') {\n  if (e.scorer || e.last_scorer)  promptLines.push(`Goleador: ${e.scorer || e.last_scorer || '?'}`);\n  if (e.assist || e.last_assist)  promptLines.push(`Asistencia: ${e.assist || e.last_assist}`);\n  if (e.detail || e.last_detail)  promptLines.push(`Tipo de gol: ${e.detail || e.last_detail}`);\n  if (e.elapsed || e.last_minute) promptLines.push(`Minuto: ${e.elapsed || e.last_minute}'`);\n  if (e.narrative)                promptLines.push(`Narrativa: ${e.narrative}`);\n  if (e.ctxLabel)                 promptLines.push(`Contexto: ${e.ctxLabel}`);\n}\nif (tipo === 'halftime') {\n  promptLines.push('Evento: FIN PRIMER TIEMPO');\n  if (e.goals_ht && e.goals_ht.length) promptLines.push(`Goles 1T: ${e.goals_ht.map(g=>g.player?.name+'('+g.time?.elapsed+\"')\").join(', ')}`);\n}\nif (tipo === 'h2_start')  promptLines.push('Evento: INICIO SEGUNDO TIEMPO');\nif (tipo === 'fulltime') {\n  promptLines.push('Evento: RESULTADO FINAL');\n  if (e.mvp_name) promptLines.push(`MVP: ${e.mvp_name}`);\n  if (e.winner)   promptLines.push(`Ganador: ${e.winner}`);\n}\nif (tipo === 'kickoff') {\n  if (e.venue)  promptLines.push(`Estadio: ${e.venue}`);\n  if (e.league) promptLines.push(`Liga: ${e.league}`);\n  promptLines.push('Evento: INICIO DEL PARTIDO');\n}\nif (tipo === 'prepartido') {\n  if (e.venue)  promptLines.push(`Estadio: ${e.venue}`);\n  if (e.hhmm)   promptLines.push(`Hora: ${e.hhmm} CDMX`);\n  if (e.league) promptLines.push(`Liga: ${e.league}`);\n  promptLines.push('Evento: PRÓXIMO PARTIDO (15 min)');\n}\nif (tipo === 'resumen') {\n  promptLines.push('Lista de partidos del día con resultados incluida en narrativa');\n}\n\nreturn [{ json: { ...e, ai_prompt: promptLines.join('\\n') } }];\n"
+      }
+    },
+    {
+      "id": "ai_agent_evt",
+      "name": "AI Enrich EVT",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        1440,
+        420
+      ],
+      "parameters": {
+        "agent": "conversationalAgent",
+        "promptType": "define",
+        "text": "={{ $json.ai_prompt }}",
+        "options": {
+          "systemMessage": "Eres el cronista oficial de RODAI Sport para el Mundial FIFA 2026.\nTu tarea: generar UN mensaje de alerta deportiva en español para enviar a fanáticos por Telegram/WhatsApp.\n\nREGLAS OBLIGATORIAS:\n- Máximo 150 palabras\n- Líneas cortas (1 idea por línea, máx 60 caracteres)\n- Emojis relevantes (máx 6 en todo el mensaje)\n- CERO markdown (no **, no ##, no _texto_)\n- Tono: emocionante como locutor de radio deportivo\n- Siempre el marcador exacto con banderas\n- Última línea siempre: ⏱ Xmin · #RODAI Sport  (o ⏱ Final · #RODAI Sport)\n- NO links, NO hashtags extras, NO publicidad\n- Devuelve SOLO el mensaje, sin ninguna explicación adicional\n\nTIPOS DE ALERTA que puedes recibir:\n  kickoff   → inicio de partido\n  goal      → gol anotado\n  halftime  → fin primer tiempo\n  h2_start  → inicio segundo tiempo\n  fulltime  → resultado final\n  prepartido → 15 min antes del partido\n  resumen   → resumen del día",
+          "maxIterations": 1
+        }
+      }
+    },
+    {
+      "id": "ai_lm_evt",
+      "name": "AI LM EVT",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1440,
+        600
+      ],
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {
+          "maxTokens": 400,
+          "temperature": 0.75
+        }
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "DNniMXGQP8C9zu5z",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "id": "ai_post_evt",
+      "name": "AI Post EVT",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1680,
+        420
+      ],
+      "parameters": {
+        "jsCode": "\nconst ai   = ($json.output || '').trim();\n// fallback to original message if AI returned empty\nconst prep = $input.first().json;\nconst msg  = ai.length > 20 ? ai : (prep.msg_tg || '');\nreturn [{ json: { ...prep, msg_tg: msg, msg_wa: msg, ai_enriched: true } }];\n"
+      }
+    },
+    {
+      "id": "ai_prep_pre",
+      "name": "AI Prep PRE",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        910
+      ],
+      "parameters": {
+        "jsCode": "\nconst e = $input.first().json;\nconst home = e.home || 'Local';\nconst away = e.away || 'Visitante';\nlet promptLines = [\n  'TIPO DE ALERTA: PREPARTIDO',\n  `Partido: ${home} vs ${away}`,\n  `Evento: PRÓXIMO PARTIDO (15 min)`\n];\nif (e.venue)  promptLines.push(`Estadio: ${e.venue}`);\nif (e.hhmm)   promptLines.push(`Hora: ${e.hhmm} CDMX`);\nif (e.league) promptLines.push(`Liga: ${e.league}`);\nreturn [{ json: { ...e, ai_prompt: promptLines.join('\\n') } }];\n"
+      }
+    },
+    {
+      "id": "ai_agent_pre",
+      "name": "AI Enrich PRE",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        1440,
+        910
+      ],
+      "parameters": {
+        "agent": "conversationalAgent",
+        "promptType": "define",
+        "text": "={{ $json.ai_prompt }}",
+        "options": {
+          "systemMessage": "Eres el cronista oficial de RODAI Sport para el Mundial FIFA 2026.\nTu tarea: generar UN mensaje de alerta deportiva en español para enviar a fanáticos por Telegram/WhatsApp.\n\nREGLAS OBLIGATORIAS:\n- Máximo 150 palabras\n- Líneas cortas (1 idea por línea, máx 60 caracteres)\n- Emojis relevantes (máx 6 en todo el mensaje)\n- CERO markdown (no **, no ##, no _texto_)\n- Tono: emocionante como locutor de radio deportivo\n- Siempre el marcador exacto con banderas\n- Última línea siempre: ⏱ Xmin · #RODAI Sport  (o ⏱ Final · #RODAI Sport)\n- NO links, NO hashtags extras, NO publicidad\n- Devuelve SOLO el mensaje, sin ninguna explicación adicional\n\nTIPOS DE ALERTA que puedes recibir:\n  kickoff   → inicio de partido\n  goal      → gol anotado\n  halftime  → fin primer tiempo\n  h2_start  → inicio segundo tiempo\n  fulltime  → resultado final\n  prepartido → 15 min antes del partido\n  resumen   → resumen del día",
+          "maxIterations": 1
+        }
+      }
+    },
+    {
+      "id": "ai_lm_pre",
+      "name": "AI LM PRE",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1440,
+        1090
+      ],
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {
+          "maxTokens": 400,
+          "temperature": 0.75
+        }
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "DNniMXGQP8C9zu5z",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "id": "ai_post_pre",
+      "name": "AI Post PRE",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1680,
+        910
+      ],
+      "parameters": {
+        "jsCode": "\nconst ai   = ($json.output || '').trim();\n// fallback to original message if AI returned empty\nconst prep = $input.first().json;\nconst msg  = ai.length > 20 ? ai : (prep.msg_tg || '');\nreturn [{ json: { ...prep, msg_tg: msg, msg_wa: msg, ai_enriched: true } }];\n"
+      }
+    },
+    {
+      "id": "ai_prep_dai",
+      "name": "AI Prep DAI",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        1510
+      ],
+      "parameters": {
+        "jsCode": "\nconst e = $input.first().json;\nlet promptLines = [\n  'TIPO DE ALERTA: RESUMEN DEL DÍA',\n  'Evento: RESUMEN DIARIO MUNDIAL FIFA 2026',\n  'Mensaje base a enriquecer:'\n];\nif (e.msg_tg) promptLines.push(e.msg_tg);\nreturn [{ json: { ...e, ai_prompt: promptLines.join('\\n') } }];\n"
+      }
+    },
+    {
+      "id": "ai_agent_dai",
+      "name": "AI Enrich DAI",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        1440,
+        1510
+      ],
+      "parameters": {
+        "agent": "conversationalAgent",
+        "promptType": "define",
+        "text": "={{ $json.ai_prompt }}",
+        "options": {
+          "systemMessage": "Eres el cronista oficial de RODAI Sport para el Mundial FIFA 2026.\nTu tarea: generar UN mensaje de alerta deportiva en español para enviar a fanáticos por Telegram/WhatsApp.\n\nREGLAS OBLIGATORIAS:\n- Máximo 150 palabras\n- Líneas cortas (1 idea por línea, máx 60 caracteres)\n- Emojis relevantes (máx 6 en todo el mensaje)\n- CERO markdown (no **, no ##, no _texto_)\n- Tono: emocionante como locutor de radio deportivo\n- Siempre el marcador exacto con banderas\n- Última línea siempre: ⏱ Xmin · #RODAI Sport  (o ⏱ Final · #RODAI Sport)\n- NO links, NO hashtags extras, NO publicidad\n- Devuelve SOLO el mensaje, sin ninguna explicación adicional\n\nTIPOS DE ALERTA que puedes recibir:\n  kickoff   → inicio de partido\n  goal      → gol anotado\n  halftime  → fin primer tiempo\n  h2_start  → inicio segundo tiempo\n  fulltime  → resultado final\n  prepartido → 15 min antes del partido\n  resumen   → resumen del día",
+          "maxIterations": 1
+        }
+      }
+    },
+    {
+      "id": "ai_lm_dai",
+      "name": "AI LM DAI",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1440,
+        1690
+      ],
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {
+          "maxTokens": 400,
+          "temperature": 0.75
+        }
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "DNniMXGQP8C9zu5z",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "id": "ai_post_dai",
+      "name": "AI Post DAI",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1680,
+        1510
+      ],
+      "parameters": {
+        "jsCode": "\nconst ai   = ($json.output || '').trim();\n// fallback to original message if AI returned empty\nconst prep = $input.first().json;\nconst msg  = ai.length > 20 ? ai : (prep.msg_tg || '');\nreturn [{ json: { ...prep, msg_tg: msg, msg_wa: msg, ai_enriched: true } }];\n"
+      }
+    }
+  ],
+  "connections": {
+    "Cron Live": {
+      "main": [
+        [
+          {
+            "node": "API Live",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "API Live": {
+      "main": [
+        [
+          {
+            "node": "JS Live",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JS Live": {
+      "main": [
+        [
+          {
+            "node": "IF Events Live",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Events Live": {
+      "main": [
+        [
+          {
+            "node": "Loop Eventos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Eventos": {
+      "main": [
+        [],
+        [
+          {
+            "node": "IF Kickoff",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Kickoff": {
+      "main": [
+        [
+          {
+            "node": "Prep Lineup",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Prep EVT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prep Lineup": {
+      "main": [
+        [
+          {
+            "node": "HTTP Lineups",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Lineups": {
+      "main": [
+        [
+          {
+            "node": "Build Lineup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DB Subs KO": {
+      "main": [
+        [
+          {
+            "node": "Loop Subs KO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Subs KO": {
+      "main": [
+        [
+          {
+            "node": "Loop Eventos",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Recover KO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recover KO": {
+      "main": [
+        [
+          {
+            "node": "INSERT KO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INSERT KO": {
+      "main": [
+        [
+          {
+            "node": "IF New KO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF New KO": {
+      "main": [
+        [
+          {
+            "node": "Router KO",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Subs KO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Router KO": {
+      "main": [
+        [
+          {
+            "node": "TG KO",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WA KO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TG KO": {
+      "main": [
+        [
+          {
+            "node": "IF Sponsor KO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Sponsor KO": {
+      "main": [
+        [
+          {
+            "node": "TG Photo KO",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Subs KO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Lineup": {
+      "main": [
+        [
+          {
+            "node": "DB Subs KO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DB Subs EVT": {
+      "main": [
+        [
+          {
+            "node": "Loop Subs EVT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Subs EVT": {
+      "main": [
+        [
+          {
+            "node": "Loop Eventos",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Recover EVT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recover EVT": {
+      "main": [
+        [
+          {
+            "node": "INSERT EVT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INSERT EVT": {
+      "main": [
+        [
+          {
+            "node": "IF New EVT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF New EVT": {
+      "main": [
+        [
+          {
+            "node": "Router EVT",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Subs EVT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Router EVT": {
+      "main": [
+        [
+          {
+            "node": "IF Single Photo EVT",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WA EVT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TG EVT": {
+      "main": [
+        [
+          {
+            "node": "IF Sponsor EVT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Sponsor EVT": {
+      "main": [
+        [
+          {
+            "node": "TG Photo EVT",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Subs EVT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cron Pre": {
+      "main": [
+        [
+          {
+            "node": "API Hoy",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "API Hoy": {
+      "main": [
+        [
+          {
+            "node": "JS Pre",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JS Pre": {
+      "main": [
+        [
+          {
+            "node": "IF Events Pre",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Events Pre": {
+      "main": [
+        [
+          {
+            "node": "Loop Pre",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Pre": {
+      "main": [
+        [],
+        [
+          {
+            "node": "AI Prep PRE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DB Subs PRE": {
+      "main": [
+        [
+          {
+            "node": "Loop Subs PRE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Subs PRE": {
+      "main": [
+        [
+          {
+            "node": "Loop Pre",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Recover PRE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recover PRE": {
+      "main": [
+        [
+          {
+            "node": "INSERT PRE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INSERT PRE": {
+      "main": [
+        [
+          {
+            "node": "IF New PRE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF New PRE": {
+      "main": [
+        [
+          {
+            "node": "Router PRE",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Subs PRE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Router PRE": {
+      "main": [
+        [
+          {
+            "node": "TG PRE",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WA PRE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TG PRE": {
+      "main": [
+        [
+          {
+            "node": "IF Sponsor PRE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Sponsor PRE": {
+      "main": [
+        [
+          {
+            "node": "TG Photo PRE",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Subs PRE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cron Daily": {
+      "main": [
+        [
+          {
+            "node": "API Daily",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "API Daily": {
+      "main": [
+        [
+          {
+            "node": "JS Daily",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JS Daily": {
+      "main": [
+        [
+          {
+            "node": "IF Events Daily",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Events Daily": {
+      "main": [
+        [
+          {
+            "node": "Loop Daily",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Daily": {
+      "main": [
+        [],
+        [
+          {
+            "node": "AI Prep DAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DB Subs DAI": {
+      "main": [
+        [
+          {
+            "node": "Loop Subs DAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Subs DAI": {
+      "main": [
+        [
+          {
+            "node": "Loop Daily",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Recover DAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recover DAI": {
+      "main": [
+        [
+          {
+            "node": "INSERT DAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INSERT DAI": {
+      "main": [
+        [
+          {
+            "node": "IF New DAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF New DAI": {
+      "main": [
+        [
+          {
+            "node": "Router DAI",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Subs DAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Router DAI": {
+      "main": [
+        [
+          {
+            "node": "TG DAI",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WA DAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TG DAI": {
+      "main": [
+        [
+          {
+            "node": "IF Sponsor DAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Sponsor DAI": {
+      "main": [
+        [
+          {
+            "node": "TG Photo DAI",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Subs DAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Single Photo EVT": {
+      "main": [
+        [
+          {
+            "node": "TG Single Photo EVT",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "TG EVT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WA EVT": {
+      "main": [
+        [
+          {
+            "node": "Loop Subs EVT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TG Photo EVT": {
+      "main": [
+        [
+          {
+            "node": "Loop Subs EVT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TG Single Photo EVT": {
+      "main": [
+        [
+          {
+            "node": "Loop Subs EVT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WA KO": {
+      "main": [
+        [
+          {
+            "node": "Loop Subs KO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TG Photo KO": {
+      "main": [
+        [
+          {
+            "node": "Loop Subs KO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WA PRE": {
+      "main": [
+        [
+          {
+            "node": "Loop Subs PRE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TG Photo PRE": {
+      "main": [
+        [
+          {
+            "node": "Loop Subs PRE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WA DAI": {
+      "main": [
+        [
+          {
+            "node": "Loop Subs DAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TG Photo DAI": {
+      "main": [
+        [
+          {
+            "node": "Loop Subs DAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Prep EVT": {
+      "main": [
+        [
+          {
+            "node": "AI Enrich EVT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Enrich EVT": {
+      "main": [
+        [
+          {
+            "node": "AI Post EVT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Post EVT": {
+      "main": [
+        [
+          {
+            "node": "DB Subs EVT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI LM EVT": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Enrich EVT",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Prep PRE": {
+      "main": [
+        [
+          {
+            "node": "AI Enrich PRE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Enrich PRE": {
+      "main": [
+        [
+          {
+            "node": "AI Post PRE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Post PRE": {
+      "main": [
+        [
+          {
+            "node": "DB Subs PRE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI LM PRE": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Enrich PRE",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Prep DAI": {
+      "main": [
+        [
+          {
+            "node": "AI Enrich DAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Enrich DAI": {
+      "main": [
+        [
+          {
+            "node": "AI Post DAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Post DAI": {
+      "main": [
+        [
+          {
+            "node": "DB Subs DAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI LM DAI": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Enrich DAI",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "errorWorkflow": "EsaoKCXpD3TZMCje"
+  },
+  "staticData": {
+    "node:Cron Live": {
+      "recurrenceRules": []
+    },
+    "node:Cron Pre": {
+      "recurrenceRules": []
+    },
+    "node:Cron Daily": {
+      "recurrenceRules": []
+    },
+    "node:JS Live": {
+      "1544368": {
+        "hs": 0,
+        "as_": 0,
+        "status": "2H",
+        "kickoffSent": false,
+        "lineupSent": false,
+        "htSent": false,
+        "h2Sent": false,
+        "ftSent": false
+      },
+      "1550833": {
+        "hs": 1,
+        "as_": 0,
+        "status": "HT",
+        "kickoffSent": true,
+        "lineupSent": true,
+        "htSent": true,
+        "h2Sent": false,
+        "ftSent": false
+      }
+    },
+    "global": {}
+  },
+  "meta": null,
+  "pinData": null,
+  "versionId": "dc2ba003-7435-42a1-89f4-6cb6ce22d6ec",
+  "activeVersionId": "dc2ba003-7435-42a1-89f4-6cb6ce22d6ec",
+  "versionCounter": 211,
+  "triggerCount": 3,
+  "shared": [
+    {
+      "updatedAt": "2026-06-09T20:23:14.554Z",
+      "createdAt": "2026-06-09T20:23:14.554Z",
+      "role": "workflow:owner",
+      "workflowId": "eArw5zghtsxxaoCn",
+      "projectId": "g2T64qb4JyW1mWdT",
+      "project": {
+        "updatedAt": "2026-03-23T02:01:06.896Z",
+        "createdAt": "2026-03-23T01:54:43.748Z",
+        "id": "g2T64qb4JyW1mWdT",
+        "name": "Erick RODAI <admin@rodai.io>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "111326d0-ca57-4427-a4d0-5c6508637090"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-06-10T16:08:21.617Z",
+    "createdAt": "2026-06-10T16:08:21.617Z",
+    "versionId": "dc2ba003-7435-42a1-89f4-6cb6ce22d6ec",
+    "workflowId": "eArw5zghtsxxaoCn",
+    "nodes": [
+      {
+        "id": "c1_cron",
+        "name": "Cron Live",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "*/2 * * * *"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "c1_api",
+        "name": "API Live",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          240,
+          0
+        ],
+        "parameters": {
+          "method": "GET",
+          "url": "={{ 'https://v3.football.api-sports.io/fixtures?date=' + $now.toFormat('yyyy-MM-dd') + '&season=2026&status=1H-2H-HT-ET-BT-P' }}",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "options": {}
+        },
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "0O1iRnWh7lP5isWW",
+            "name": "API-Football Mundial 2026"
+          }
+        }
+      },
+      {
+        "id": "c1_js",
+        "name": "JS Live",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          480,
+          0
+        ],
+        "parameters": {
+          "jsCode": "\nconst data     = $input.first().json;\nconst fixtures = data.response || [];\nconst sd       = $getWorkflowStaticData('node');\nconst globalSd = $getWorkflowStaticData('global');\nconst events   = [];\n\nconst FLAGS = {\n  'Mexico':'🇲🇽','México':'🇲🇽','South Africa':'🇿🇦','Sudáfrica':'🇿🇦',\n  'Spain':'🇪🇸','España':'🇪🇸','Peru':'🇵🇪','Perú':'🇵🇪',\n  'Brazil':'🇧🇷','Brasil':'🇧🇷','Argentina':'🇦🇷','Germany':'🇩🇪','Alemania':'🇩🇪',\n  'France':'🇫🇷','Francia':'🇫🇷','England':'🏴󠁧󠁢󠁥󠁮󠁧󠁿','Portugal':'🇵🇹',\n  'Netherlands':'🇳🇱','Belgium':'🇧🇪','Bélgica':'🇧🇪',\n  'Italy':'🇮🇹','Italia':'🇮🇹','Croatia':'🇭🇷','Croacia':'🇭🇷',\n  'Uruguay':'🇺🇾','Colombia':'🇨🇴','Chile':'🇨🇱','Ecuador':'🇪🇨',\n  'USA':'🇺🇸','United States':'🇺🇸','Canada':'🇨🇦','Canadá':'🇨🇦',\n  'Japan':'🇯🇵','Japón':'🇯🇵','South Korea':'🇰🇷','Korea Republic':'🇰🇷',\n  'Morocco':'🇲🇦','Marruecos':'🇲🇦','Senegal':'🇸🇳',\n  'Saudi Arabia':'🇸🇦','Arabia Saudita':'🇸🇦',\n  'Qatar':'🇶🇦','Iran':'🇮🇷','Australia':'🇦🇺','Poland':'🇵🇱','Polonia':'🇵🇱',\n  'Switzerland':'🇨🇭','Suiza':'🇨🇭','Denmark':'🇩🇰','Dinamarca':'🇩🇰',\n  'Serbia':'🇷🇸','Ukraine':'🇺🇦','Ucrania':'🇺🇦','Tunisia':'🇹🇳','Túnez':'🇹🇳',\n  'Nigeria':'🇳🇬','Ghana':'🇬🇭','Cameroon':'🇨🇲','Camerún':'🇨🇲',\n  'Costa Rica':'🇨🇷','Panama':'🇵🇦','Panamá':'🇵🇦','Honduras':'🇭🇳',\n  'El Salvador':'🇸🇻','Guatemala':'🇬🇹','Bolivia':'🇧🇴','Paraguay':'🇵🇾',\n  'Venezuela':'🇻🇪','Indonesia':'🇮🇩','New Zealand':'🇳🇿',\n  'Vanuatu':'🇻🇺','Fiji':'🇫🇯','Philippines':'🇵🇭','Thailand':'🇹🇭',\n  'China':'🇨🇳','India':'🇮🇳','UAE':'🇦🇪','Russia':'🇷🇺',\n  'Hungary':'🇭🇺','Romania':'🇷🇴','Greece':'🇬🇷','Turkey':'🇹🇷',\n  'Scotland':'🏴󠁧󠁢󠁳󠁣󠁴󠁿','Wales':'🏴󠁧󠁢󠁷󠁬󠁳󠁿','Ireland':'🇮🇪','Republic of Ireland':'🇮🇪',\n  'Austria':'🇦🇹','Sweden':'🇸🇪','Norway':'🇳🇴','Finland':'🇫🇮',\n  'Czech Republic':'🇨🇿','Slovakia':'🇸🇰','Slovenia':'🇸🇮',\n  'North Macedonia':'🇲🇰','Albania':'🇦🇱','Montenegro':'🇲🇪',\n  'Azerbaijan':'🇦🇿','Georgia':'🇬🇪','Armenia':'🇦🇲','Belarus':'🇧🇾',\n  'Kazakhstan':'🇰🇿','Lithuania':'🇱🇹','Latvia':'🇱🇻','Estonia':'🇪🇪',\n  'Angola':'🇦🇴','Togo':'🇹🇬','Benin':'🇧🇯','Liberia':'🇱🇷',\n  'Congo DR':'🇨🇩','Ethiopia':'🇪🇹','Rwanda':'🇷🇼','Kenya':'🇰🇪',\n  'Zimbabwe':'🇿🇼','Zambia':'🇿🇲','Botswana':'🇧🇼',\n  'Sierra Leone':'🇸🇱','Mauritania':'🇲🇷','Myanmar':'🇲🇲',\n  'Cambodia':'🇰🇭','Hong Kong':'🇭🇰','Syria':'🇸🇾','Iraq':'🇮🇶',\n  'Jordan':'🇯🇴','Kuwait':'🇰🇼','Bahrain':'🇧🇭','Oman':'🇴🇲'\n};\n\nfunction flag(name) { return FLAGS[name] || '⚽'; }\n\nfunction minStr(e) {\n  const extra = e.time?.extra;\n  return extra ? `${e.time.elapsed}+${extra}'` : `${e.time?.elapsed || 0}'`;\n}\n\nfunction expandName(fixtureId, name) {\n  if (!name) return name;\n  const nm = globalSd[`nm_${fixtureId}`] || {};\n  return nm[name] || name;\n}\n\n// ── Narrativa compacta (1-2 frases) ──────────────────────────────────────────\nfunction buildNarrative(scorer, assist, detail, minute, scoring, home, away, hs, as_) {\n  const diff   = Math.abs(hs - as_);\n  const isLocal = scoring === home;\n  const team   = isLocal ? 'local' : 'visitante';\n  let accion;\n  if (detail === 'Header')\n    accion = assist\n      ? `Centro de ${assist} y ${scorer} conecta de cabeza sin dar opción al portero.`\n      : `${scorer} se anticipa en el área y convierte de cabeza con instinto goleador.`;\n  else if (detail === 'Penalty')\n    accion = `${scorer} ejecuta el penal con total frialdad y no falla desde los doce pasos.`;\n  else if (detail === 'Free Kick' || detail === 'Freekick')\n    accion = `${scorer} cobra el tiro libre con maestría y la pelota se clava en la escuadra.`;\n  else if (detail === 'Own Goal')\n    accion = `Desafortunado desvío en propia puerta que sentencia la jugada.`;\n  else\n    accion = assist\n      ? `${assist} asiste y ${scorer} define con precisión ante el arquero rival.`\n      : `${scorer} recibe, se acomoda y dispara inapelable para el portero.`;\n\n  let contexto;\n  if (minute <= 10)           contexto = `El gol tempranero obliga al rival a replantear desde el inicio.`;\n  else if (minute >= 86)      contexto = `Golazo sobre la bocina que puede ser definitivo.`;\n  else if (hs === as_)        contexto = `El marcador queda igualado y todo se decide en los minutos que restan.`;\n  else if (diff === 1 && hs + as_ === 1) contexto = `Se abre el marcador y el partido entra en una nueva dimensión.`;\n  else if (minute >= 70 && diff === 1) contexto = `Gol que puede ser el de la victoria en la recta final.`;\n  else if (diff >= 3)         contexto = `El dominio del equipo ${team} queda reflejado en el marcador.`;\n  else                        contexto = `El equipo ${team} amplía la ventaja y administra el partido.`;\n  return `${accion} ${contexto}`;\n}\n\nfunction contextLabel(minute, hs, as_, detail) {\n  if (detail === 'Own Goal')  return null;\n  if (minute <= 10)           return '🚀 Gol tempranero';\n  if (minute >= 86)           return '🔥 Gol sobre la bocina';\n  if (hs === as_)             return '🔄 Gol del empate';\n  const diff = Math.abs(hs - as_);\n  if (diff === 1 && hs + as_ === 1) return '🔓 Se abre el marcador';\n  if (minute >= 70 && diff === 1)   return '🏆 Gol decisivo';\n  if (diff >= 3)                    return '📈 Goleada en camino';\n  return '⚡ El marcador se mueve';\n}\n\nfunction goalLine(e, fid) {\n  const f      = flag(e.team?.name || '');\n  const isOG   = e.detail === 'Own Goal';\n  const isPen  = e.detail === 'Penalty';\n  const player = expandName(fid, e.player?.name) || '?';\n  const assist = expandName(fid, e.assist?.name);\n  const min    = minStr(e);\n  let line = isOG ? `😬 ${player}  ${min}  · OG` : `${f} ${player}  ${min}${isPen ? '  · Pen' : ''}`;\n  if (assist) line += `\\n🅰 ${assist}`;\n  return line;\n}\n\nfunction mvp(goals, fid) {\n  const c = {};\n  for (const g of goals) {\n    if (g.detail === 'Own Goal') continue;\n    const p = expandName(fid, g.player?.name), a = expandName(fid, g.assist?.name);\n    if (p) c[p] = (c[p] || 0) + 2;\n    if (a) c[a] = (c[a] || 0) + 1;\n  }\n  const s = Object.entries(c).sort((a,b) => b[1] - a[1]);\n  return s.length ? s[0][0] : null;\n}\n\nconst ALLOWED_L = [1, 10];\n\nfor (const fix of fixtures) {\n  if (!ALLOWED_L.includes(fix.league?.id)) continue;\n\n  const id      = String(fix.fixture.id);\n  const status  = fix.fixture.status?.short || '';\n  const elapsed = fix.fixture.status?.elapsed || 0;\n  const home    = fix.teams?.home?.name  || 'Local';\n  const away    = fix.teams?.away?.name  || 'Visitante';\n  const fH      = flag(home);\n  const fA      = flag(away);\n  const hs      = fix.goals?.home  ?? 0;\n  const as_     = fix.goals?.away  ?? 0;\n  const venue   = fix.fixture?.venue?.name || '';\n  const league  = fix.league?.name || 'Internacional';\n  const fixEvts = fix.events || [];\n\n  const prev = sd[id] || {\n    hs:0, as_:0, status:'NS',\n    kickoffSent:false, lineupSent:false,\n    htSent:false, h2Sent:false, ftSent:false\n  };\n\n  // ── Marcador inline ────────────────────────────────────────────────────────\n  const score = `${fH} ${home}  ${hs} – ${as_}  ${away} ${fA}`;\n\n  // ── 1. KICKOFF ─────────────────────────────────────────────────────────────\n  if (status === '1H' && !['1H','2H','HT','ET'].includes(prev.status) && !prev.kickoffSent) {\n    const lines = [\n      '🟢 ¡PARTIDO INICIADO!',\n      '',\n      `${fH} ${home}  0 – 0  ${away} ${fA}`,\n      '',\n      `📅 ${league}`,\n      venue ? `🏟 ${venue}` : null,\n      '',\n      '⏱ En curso  ·  #RODAI Sport'\n    ].filter(l => l !== null);\n    const msg = lines.join('\\n');\n    events.push({ partido_id:id, tipo:'kickoff', detalle:`ko_${id}`,\n      home, away, venue, elapsed:0, msg_wa:msg, msg_tg:msg });\n  }\n\n  // ── 2. ALINEACIONES ────────────────────────────────────────────────────────\n  if (status === '1H' && elapsed >= 1 && elapsed <= 5 && !prev.lineupSent) {\n    events.push({ partido_id:id, tipo:'lineup', detalle:`lu_${id}`,\n      home, away, venue, elapsed,\n      msg_wa:'LINEUP_PENDING', msg_tg:'LINEUP_PENDING' });\n  }\n\n  // ── 3. GOLES ───────────────────────────────────────────────────────────────\n  if ((hs > prev.hs || as_ > prev.as_) && ['1H','2H','ET'].includes(status)) {\n    const goalEvts = fixEvts.filter(e => e.type === 'Goal');\n    const last     = goalEvts[goalEvts.length - 1] || {};\n    const scoring  = last.team?.name || (hs > prev.hs ? home : away);\n    const scorer   = expandName(id, last.player?.name) || '?';\n    const assist   = expandName(id, last.assist?.name) || null;\n    const detail   = last.detail || 'Normal Goal';\n    const goalMin  = last.time?.elapsed || elapsed;\n    const extra    = last.time?.extra || null;\n    const minFull  = extra ? `${goalMin}+${extra}'` : `${goalMin}'`;\n    const isOG     = detail === 'Own Goal';\n    const isPen    = detail === 'Penalty';\n    const narrative = buildNarrative(scorer, assist, detail, goalMin, scoring, home, away, hs, as_);\n    const ctxLabel  = contextLabel(goalMin, hs, as_, detail);\n    const fScoring  = flag(scoring);\n\n    const lines = [\n      `🚨 GOOOL DE ${scoring.toUpperCase()}`,\n      '',\n      `${fH} ${home}  ${hs} – ${as_}  ${away} ${fA}`,\n      ''\n    ];\n\n    if (isOG)      lines.push(`😬 ${scorer}  ${minFull}  · OG`);\n    else if (isPen) lines.push(`⚽ ${scorer}  ${minFull}  · Pen`);\n    else            lines.push(`⚽ ${scorer}  ${minFull}`);\n\n    if (assist) lines.push(`🅰 ${assist}`);\n\n    lines.push('', narrative);\n    if (ctxLabel) lines.push('', ctxLabel);\n    lines.push('', `⏱ ${minFull}  ·  #RODAI Sport`);\n\n    const msg = lines.join('\\n');\n    events.push({ partido_id:id, tipo:'goal', detalle:`goal_${id}_${hs}_${as_}`,\n      home, away, msg_wa:msg, msg_tg:msg });\n  }\n\n  // ── 4. FIN PRIMER TIEMPO ───────────────────────────────────────────────────\n  if (status === 'HT' && !prev.htSent) {\n    const goalsHT  = fixEvts.filter(e => e.type==='Goal' && (e.time?.elapsed||0) <= 45);\n    const lines    = [\n      '⏸ DESCANSO',\n      '',\n      `${fH} ${home}  ${hs} – ${as_}  ${away} ${fA}`\n    ];\n    if (goalsHT.length) {\n      lines.push('');\n      goalsHT.forEach(g => lines.push(goalLine(g, id)));\n    }\n    lines.push('', `⏱ Fin del primer tiempo  ·  #RODAI Sport`);\n    events.push({ partido_id:id, tipo:'halftime', detalle:`ht_${id}_${hs}_${as_}`,\n      home, away, msg_wa:lines.join('\\n'), msg_tg:lines.join('\\n') });\n  }\n\n  // ── 5. INICIO 2DO TIEMPO ──────────────────────────────────────────────────\n  if (status === '2H' && prev.status === 'HT' && !prev.h2Sent) {\n    const msg = [\n      '▶️ SEGUNDO TIEMPO',\n      '',\n      `${fH} ${home}  ${hs} – ${as_}  ${away} ${fA}`,\n      '',\n      `⏱ Segunda mitad iniciada  ·  #RODAI Sport`\n    ].join('\\n');\n    events.push({ partido_id:id, tipo:'h2_start', detalle:`h2_${id}`,\n      home, away, msg_wa:msg, msg_tg:msg });\n  }\n\n  // ── 6. RESULTADO FINAL ────────────────────────────────────────────────────\n  if (['FT','AET','PEN'].includes(status) && !prev.ftSent) {\n    const allGoals = fixEvts.filter(e => e.type === 'Goal');\n    const allCards = fixEvts.filter(e => e.type === 'Card');\n    const winner   = hs > as_ ? home : as_ > hs ? away : null;\n    const mvpName  = mvp(allGoals, id);\n\n    const lines = [\n      '🏁 RESULTADO FINAL',\n      '',\n      `${fH} ${home}  ${hs} – ${as_}  ${away} ${fA}`\n    ];\n\n    if (allGoals.length) {\n      lines.push('');\n      allGoals.forEach(g => lines.push(goalLine(g, id)));\n    }\n\n    const yellowCards = allCards.filter(c => c.detail === 'Yellow Card');\n    const redCards    = allCards.filter(c => c.detail === 'Red Card');\n    if (yellowCards.length + redCards.length > 0) {\n      lines.push('');\n      yellowCards.forEach(c => lines.push(`🟨 ${expandName(id, c.player?.name)}  ${minStr(c)}`));\n      redCards.forEach(c => lines.push(`🟥 ${expandName(id, c.player?.name)}  ${minStr(c)}`));\n    }\n\n    lines.push('');\n    if (mvpName) lines.push(`⭐ MVP: ${mvpName}`);\n    lines.push(winner ? `🏆 Ganador: ${winner}` : '🤝 Empate');\n    lines.push('');\n    lines.push(`📅 ${league}  ·  ⏱ Finalizado`);\n    lines.push('#RODAI Sport');\n\n    events.push({ partido_id:id, tipo:'fulltime', detalle:`ft_${id}_${hs}_${as_}`,\n      home, away, msg_wa:lines.join('\\n'), msg_tg:lines.join('\\n') });\n  }\n\n  sd[id] = {\n    hs, as_, status,\n    kickoffSent : prev.kickoffSent || (status==='1H' && !['1H','2H','HT','ET'].includes(prev.status)),\n    lineupSent  : prev.lineupSent  || (status==='1H' && elapsed>=1 && elapsed<=5),\n    htSent      : prev.htSent      || (status==='HT'),\n    h2Sent      : prev.h2Sent      || (status==='2H' && prev.status==='HT'),\n    ftSent      : prev.ftSent      || ['FT','AET','PEN'].includes(status)\n  };\n}\n\nif (!events.length) return [{ json:{ events_count:0 } }];\nreturn events.map(e => ({ json:{ ...e, events_count: events.length } }));\n"
+        }
+      },
+      {
+        "id": "c1_ife",
+        "name": "IF Events Live",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          720,
+          0
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true
+            },
+            "conditions": [
+              {
+                "id": "c1",
+                "leftValue": "={{ $json.events_count }}",
+                "rightValue": 0,
+                "operator": {
+                  "type": "number",
+                  "operation": "notEquals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "c1_lev",
+        "name": "Loop Eventos",
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 3,
+        "position": [
+          960,
+          0
+        ],
+        "parameters": {
+          "batchSize": 1,
+          "options": {}
+        }
+      },
+      {
+        "id": "c1_ifko",
+        "name": "IF Kickoff",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          1200,
+          0
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true
+            },
+            "conditions": [
+              {
+                "id": "c1",
+                "leftValue": "={{ $json.tipo }}",
+                "rightValue": "lineup",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "c1_prep",
+        "name": "Prep Lineup",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1440,
+          -100
+        ],
+        "parameters": {
+          "jsCode": "\nconst item = $input.first().json;\nreturn [{ json:{\n  ...item,\n  lineup_url: `https://v3.football.api-sports.io/fixtures/lineups?fixture=${item.partido_id}`\n}}];\n"
+        }
+      },
+      {
+        "id": "c1_htlu",
+        "name": "HTTP Lineups",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1680,
+          -100
+        ],
+        "parameters": {
+          "method": "GET",
+          "url": "={{ $json.lineup_url }}",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "options": {}
+        },
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "0O1iRnWh7lP5isWW",
+            "name": "API-Football Mundial 2026"
+          }
+        }
+      },
+      {
+        "id": "c1_bklu",
+        "name": "Build Lineup",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1920,
+          -100
+        ],
+        "parameters": {
+          "jsCode": "\nconst lineupResp = $input.first().json;\nconst orig       = $('Prep Lineup').first().json;\nconst globalSd   = $getWorkflowStaticData('global');\nconst FLAGS = {\n  'Mexico':'🇲🇽','México':'🇲🇽','South Africa':'🇿🇦','Sudáfrica':'🇿🇦',\n  'Spain':'🇪🇸','Peru':'🇵🇪','Brazil':'🇧🇷','Argentina':'🇦🇷',\n  'Germany':'🇩🇪','France':'🇫🇷','England':'🏴󠁧󠁢󠁥󠁮󠁧󠁿','Portugal':'🇵🇹',\n  'Netherlands':'🇳🇱','Belgium':'🇧🇪','Italy':'🇮🇹','Croatia':'🇭🇷',\n  'Uruguay':'🇺🇾','Colombia':'🇨🇴','Chile':'🇨🇱','USA':'🇺🇸',\n  'United States':'🇺🇸','Canada':'🇨🇦','Japan':'🇯🇵',\n  'South Korea':'🇰🇷','Korea Republic':'🇰🇷','Morocco':'🇲🇦',\n  'Senegal':'🇸🇳','Saudi Arabia':'🇸🇦','Ecuador':'🇪🇨',\n  'Costa Rica':'🇨🇷','Panama':'🇵🇦','Honduras':'🇭🇳',\n  'El Salvador':'🇸🇻','Bolivia':'🇧🇴','Paraguay':'🇵🇾',\n  'Venezuela':'🇻🇪','Australia':'🇦🇺','Poland':'🇵🇱',\n  'Switzerland':'🇨🇭','Denmark':'🇩🇰','Serbia':'🇷🇸',\n  'Ukraine':'🇺🇦','Tunisia':'🇹🇳','Nigeria':'🇳🇬',\n  'Ghana':'🇬🇭','Cameroon':'🇨🇲','Iran':'🇮🇷'\n};\nfunction flag(n) { return FLAGS[n] || '⚽'; }\n\nconst lineups  = lineupResp.response || [];\nconst posOrder = {G:1, D:2, M:3, F:4};\nconst nameMap  = {};\n\nfor (const team of lineups) {\n  const all = [...(team.startXI||[]).map(p=>p.player), ...(team.substitutes||[]).map(p=>p.player)];\n  for (const player of all) {\n    const full = player?.name;\n    if (!full) continue;\n    nameMap[full] = full;\n    const parts = full.trim().split(/\\s+/);\n    if (parts.length >= 2) {\n      const abbrev = parts[0].charAt(0).toUpperCase() + '. ' + parts.slice(1).join(' ');\n      nameMap[abbrev] = full;\n    }\n  }\n}\nglobalSd[`nm_${orig.partido_id}`] = nameMap;\n\nfunction fmtTeam(t) {\n  const f  = flag(t.team?.name || '');\n  const xi = (t.startXI || [])\n    .sort((a,b) => (posOrder[a.player?.pos]||5) - (posOrder[b.player?.pos]||5))\n    .map(p => (nameMap[p.player?.name] || p.player?.name || ''))\n    .filter(Boolean).join('  ·  ');\n  return [`${f} ${t.team?.name} (${t.formation||'?'})  ·  DT: ${t.coach?.name||'?'}`, xi].join('\\n');\n}\n\nlet msg;\nif (!lineups.length) {\n  msg = [\n    '📋 ALINEACIONES',\n    '',\n    `${flag(orig.home)} ${orig.home}  vs  ${orig.away} ${flag(orig.away)}`,\n    '',\n    'Aún no publicadas  ·  #RODAI Sport'\n  ].join('\\n');\n} else {\n  const fH = flag(orig.home), fA = flag(orig.away);\n  msg = [\n    '📋 ALINEACIONES',\n    '',\n    `${fH} ${orig.home}  vs  ${orig.away} ${fA}`,\n    '',\n    fmtTeam(lineups[0]),\n    '',\n    fmtTeam(lineups[1] || lineups[0]),\n    '',\n    '#RODAI Sport'\n  ].join('\\n');\n}\n\nreturn [{ json: { ...orig, msg_wa: msg, msg_tg: msg } }];\n"
+        }
+      },
+      {
+        "id": "pg_subs_KO",
+        "name": "DB Subs KO",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.5,
+        "position": [
+          2160,
+          -100
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "SELECT s.phone, s.platform, s.telegram_chat_id,\n  '{{ $json.partido_id }}' AS partido_id,\n  '{{ $json.tipo }}'       AS tipo,\n  '{{ $json.detalle }}'    AS detalle,\n  $msg_wa${{ $json.msg_wa }}$msg_wa$ AS msg_wa,\n  $msg_tg${{ $json.msg_tg }}$msg_tg$ AS msg_tg,\n  COALESCE(sp.image_url,'')  AS sponsor_image,\n  COALESCE(sp.promo_text,'') AS sponsor_promo\nFROM suscriptores s\nLEFT JOIN LATERAL (\n  SELECT image_url, promo_text FROM sponsors\n  WHERE match_id = '{{ $json.partido_id }}' AND active = true LIMIT 1\n) sp ON true\nWHERE s.active = true AND (s.paid = true OR s.demo_only = true)",
+          "options": {}
+        },
+        "credentials": {
+          "postgres": {
+            "id": "lZiJmyplRgdvifzN",
+            "name": "PG Local RODAI"
+          }
+        }
+      },
+      {
+        "id": "lp_sub_KO",
+        "name": "Loop Subs KO",
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 3,
+        "position": [
+          2400,
+          -100
+        ],
+        "parameters": {
+          "batchSize": 1,
+          "options": {}
+        }
+      },
+      {
+        "id": "rec_KO",
+        "name": "Recover KO",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2640,
+          -100
+        ],
+        "parameters": {
+          "jsCode": "const sub   = $('Loop Subs KO').first().json;\nconst promo = sub.sponsor_promo || '';\nconst image = sub.sponsor_image || '';\n\nconst waFinal = promo ? sub.msg_wa + '\\n\\n' + promo : sub.msg_wa;\nconst tgFinal = sub.msg_tg;\n\nconst waPayload = {\n  messaging_product:'whatsapp', recipient_type:'individual',\n  to: sub.phone, type:'text', text:{ body: waFinal }\n};\nreturn [{ json:{\n  phone: sub.phone, platform: sub.platform,\n  telegram_chat_id: sub.telegram_chat_id,\n  partido_id: sub.partido_id, tipo: sub.tipo, detalle: sub.detalle,\n  msg_tg: tgFinal, sponsor_image: image, sponsor_promo: promo,\n  wa_body: JSON.stringify(waPayload)\n} }];"
+        }
+      },
+      {
+        "id": "ins_KO",
+        "name": "INSERT KO",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.5,
+        "position": [
+          2880,
+          -100
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "WITH ins AS (\n  INSERT INTO alertas_enviadas (phone, partido_id, tipo, detalle, enviado_at)\n  VALUES ('{{ $json.phone }}','{{ $json.partido_id }}','{{ $json.tipo }}','{{ $json.detalle }}',NOW())\n  ON CONFLICT DO NOTHING\n  RETURNING id\n)\nSELECT COALESCE((SELECT id FROM ins), -1) AS id",
+          "options": {}
+        },
+        "credentials": {
+          "postgres": {
+            "id": "lZiJmyplRgdvifzN",
+            "name": "PG Local RODAI"
+          }
+        }
+      },
+      {
+        "id": "ifn_KO",
+        "name": "IF New KO",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          3120,
+          -100
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true
+            },
+            "conditions": [
+              {
+                "id": "c1",
+                "leftValue": "={{ $json.id }}",
+                "rightValue": -1,
+                "operator": {
+                  "type": "number",
+                  "operation": "notEquals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "rtr_KO",
+        "name": "Router KO",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          3360,
+          -100
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true
+            },
+            "conditions": [
+              {
+                "id": "c1",
+                "leftValue": "={{ $('Recover KO').first().json.platform }}",
+                "rightValue": "telegram",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "tg_KO",
+        "name": "TG KO",
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          3600,
+          -220
+        ],
+        "parameters": {
+          "resource": "message",
+          "operation": "sendMessage",
+          "chatId": "={{ $('Recover KO').first().json.telegram_chat_id }}",
+          "text": "={{ $('Recover KO').first().json.msg_tg }}",
+          "additionalFields": {
+            "appendAttribution": false
+          }
+        },
+        "credentials": {
+          "telegramApi": {
+            "id": "yovv0GvglRF0YNLq",
+            "name": "Telegram Bot Mundial 2026"
+          }
+        },
+        "webhookId": "69217b0c-3970-40b1-abae-e986c79d5ef1"
+      },
+      {
+        "id": "wa_KO",
+        "name": "WA KO",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          3600,
+          20
+        ],
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.kapso.ai/meta/whatsapp/v24.0/1365226796664715/messages",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "X-API-Key",
+                "value": "0a46b374ad7dd08b8b3f0e2713fba33de1724d02879f5fd43c431b8bb621b984"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "string",
+          "body": "={{ $json.wa_body }}",
+          "options": {}
+        },
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "ifsp_KO",
+        "name": "IF Sponsor KO",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          3840,
+          -220
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true
+            },
+            "conditions": [
+              {
+                "id": "c1",
+                "leftValue": "={{ $json.sponsor_image }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "notEquals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "tgph_KO",
+        "name": "TG Photo KO",
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          4080,
+          -220
+        ],
+        "parameters": {
+          "resource": "message",
+          "operation": "sendPhoto",
+          "chatId": "={{ $('Recover KO').first().json.telegram_chat_id }}",
+          "file": "={{ $('Recover KO').first().json.sponsor_image }}",
+          "additionalFields": {
+            "caption": "={{ $('Recover KO').first().json.sponsor_promo }}",
+            "appendAttribution": false
+          }
+        },
+        "credentials": {
+          "telegramApi": {
+            "id": "yovv0GvglRF0YNLq",
+            "name": "Telegram Bot Mundial 2026"
+          }
+        },
+        "webhookId": "bd3636d1-da08-4e6c-a3f3-260b62d92dcd"
+      },
+      {
+        "id": "pg_subs_EVT",
+        "name": "DB Subs EVT",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.5,
+        "position": [
+          1440,
+          200
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "SELECT s.phone, s.platform, s.telegram_chat_id,\n  '{{ $json.partido_id }}' AS partido_id,\n  '{{ $json.tipo }}'       AS tipo,\n  '{{ $json.detalle }}'    AS detalle,\n  $msg_wa${{ $json.msg_wa }}$msg_wa$ AS msg_wa,\n  $msg_tg${{ $json.msg_tg }}$msg_tg$ AS msg_tg,\n  COALESCE(sp.image_url,'')  AS sponsor_image,\n  COALESCE(sp.promo_text,'') AS sponsor_promo\nFROM suscriptores s\nLEFT JOIN LATERAL (\n  SELECT image_url, promo_text FROM sponsors\n  WHERE match_id = '{{ $json.partido_id }}' AND active = true LIMIT 1\n) sp ON true\nWHERE s.active = true AND (s.paid = true OR s.demo_only = true)",
+          "options": {}
+        },
+        "credentials": {
+          "postgres": {
+            "id": "lZiJmyplRgdvifzN",
+            "name": "PG Local RODAI"
+          }
+        }
+      },
+      {
+        "id": "lp_sub_EVT",
+        "name": "Loop Subs EVT",
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 3,
+        "position": [
+          1680,
+          200
+        ],
+        "parameters": {
+          "batchSize": 1,
+          "options": {}
+        }
+      },
+      {
+        "id": "rec_EVT",
+        "name": "Recover EVT",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1920,
+          200
+        ],
+        "parameters": {
+          "jsCode": "const sub    = $('Loop Subs EVT').first().json;\nconst tipo   = sub.tipo;\nconst promo  = sub.sponsor_promo  || '';\nconst image  = sub.sponsor_image  || '';\n\n// Para goles CON imagen de sponsor: una sola alerta (foto + caption)\nconst useSinglePhoto = (tipo === 'goal') && !!image;\n\n// Texto final: si es single photo, NO añadir promo al caption (ya va en la foto)\n// Si NO es single photo: promo al final del texto (WA) o foto separada (TG)\nconst waText = (!useSinglePhoto && promo) ? sub.msg_wa + '\\n\\n' + promo : sub.msg_wa;\nconst tgText = sub.msg_tg;  // Telegram siempre limpio\n\n// WhatsApp body\nlet waPayload;\nif (useSinglePhoto) {\n  // Gol + sponsor → imagen con caption (una sola notificación)\n  waPayload = {\n    messaging_product: 'whatsapp', recipient_type: 'individual',\n    to: sub.phone, type: 'image',\n    image: {\n      link: image,\n      caption: (waText + (promo ? '\\n\\n' + promo : '')).slice(0, 1024)\n    }\n  };\n} else {\n  waPayload = {\n    messaging_product: 'whatsapp', recipient_type: 'individual',\n    to: sub.phone, type: 'text', text: { body: waText }\n  };\n}\n\nreturn [{ json: {\n  phone: sub.phone, platform: sub.platform,\n  telegram_chat_id: sub.telegram_chat_id,\n  partido_id: sub.partido_id, tipo: sub.tipo, detalle: sub.detalle,\n  msg_tg: tgText,\n  tg_caption: (tgText + (promo ? '\\n\\n' + promo : '')).slice(0, 1024),\n  sponsor_image: image, sponsor_promo: promo,\n  use_single_photo: useSinglePhoto ? 'yes' : 'no',\n  wa_body: JSON.stringify(waPayload)\n} }];"
+        }
+      },
+      {
+        "id": "ins_EVT",
+        "name": "INSERT EVT",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.5,
+        "position": [
+          2160,
+          200
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "WITH ins AS (\n  INSERT INTO alertas_enviadas (phone, partido_id, tipo, detalle, enviado_at)\n  VALUES ('{{ $json.phone }}','{{ $json.partido_id }}','{{ $json.tipo }}','{{ $json.detalle }}',NOW())\n  ON CONFLICT DO NOTHING\n  RETURNING id\n)\nSELECT COALESCE((SELECT id FROM ins), -1) AS id",
+          "options": {}
+        },
+        "credentials": {
+          "postgres": {
+            "id": "lZiJmyplRgdvifzN",
+            "name": "PG Local RODAI"
+          }
+        }
+      },
+      {
+        "id": "ifn_EVT",
+        "name": "IF New EVT",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          2400,
+          200
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true
+            },
+            "conditions": [
+              {
+                "id": "c1",
+                "leftValue": "={{ $json.id }}",
+                "rightValue": -1,
+                "operator": {
+                  "type": "number",
+                  "operation": "notEquals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "rtr_EVT",
+        "name": "Router EVT",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          2640,
+          200
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true
+            },
+            "conditions": [
+              {
+                "id": "c1",
+                "leftValue": "={{ $('Recover EVT').first().json.platform }}",
+                "rightValue": "telegram",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "tg_EVT",
+        "name": "TG EVT",
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          2880,
+          80
+        ],
+        "parameters": {
+          "resource": "message",
+          "operation": "sendMessage",
+          "chatId": "={{ $('Recover EVT').first().json.telegram_chat_id }}",
+          "text": "={{ $('Recover EVT').first().json.msg_tg }}",
+          "additionalFields": {
+            "appendAttribution": false
+          }
+        },
+        "credentials": {
+          "telegramApi": {
+            "id": "yovv0GvglRF0YNLq",
+            "name": "Telegram Bot Mundial 2026"
+          }
+        },
+        "webhookId": "2995a141-d142-457e-8df3-3f25ebf88beb"
+      },
+      {
+        "id": "wa_EVT",
+        "name": "WA EVT",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          2880,
+          320
+        ],
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.kapso.ai/meta/whatsapp/v24.0/1365226796664715/messages",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "X-API-Key",
+                "value": "0a46b374ad7dd08b8b3f0e2713fba33de1724d02879f5fd43c431b8bb621b984"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "string",
+          "body": "={{ $json.wa_body }}",
+          "options": {}
+        },
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "ifsp_EVT",
+        "name": "IF Sponsor EVT",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          3120,
+          80
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true
+            },
+            "conditions": [
+              {
+                "id": "c1",
+                "leftValue": "={{ $json.sponsor_image }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "notEquals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "tgph_EVT",
+        "name": "TG Photo EVT",
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          3360,
+          80
+        ],
+        "parameters": {
+          "resource": "message",
+          "operation": "sendPhoto",
+          "chatId": "={{ $('Recover EVT').first().json.telegram_chat_id }}",
+          "file": "={{ $('Recover EVT').first().json.sponsor_image }}",
+          "additionalFields": {
+            "caption": "={{ $('Recover EVT').first().json.msg_tg }}",
+            "appendAttribution": false
+          }
+        },
+        "credentials": {
+          "telegramApi": {
+            "id": "yovv0GvglRF0YNLq",
+            "name": "Telegram Bot Mundial 2026"
+          }
+        },
+        "webhookId": "8cf69c3f-d882-4aa3-8d61-4420a4a77bf9"
+      },
+      {
+        "id": "c2_cron",
+        "name": "Cron Pre",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          0,
+          700
+        ],
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "*/5 * * * *"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "c2_api",
+        "name": "API Hoy",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          240,
+          700
+        ],
+        "parameters": {
+          "method": "GET",
+          "url": "={{ 'https://v3.football.api-sports.io/fixtures?date=' + $now.toFormat('yyyy-MM-dd') + '&season=2026' }}",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "options": {}
+        },
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "0O1iRnWh7lP5isWW",
+            "name": "API-Football Mundial 2026"
+          }
+        }
+      },
+      {
+        "id": "c2_js",
+        "name": "JS Pre",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          480,
+          700
+        ],
+        "parameters": {
+          "jsCode": "\nconst data     = $input.first().json;\nconst fixtures = data.response || [];\nconst now      = new Date();\nconst FLAGS = {\n  'Mexico':'🇲🇽','México':'🇲🇽','South Africa':'🇿🇦','Sudáfrica':'🇿🇦',\n  'Spain':'🇪🇸','Peru':'🇵🇪','Brazil':'🇧🇷','Argentina':'🇦🇷',\n  'Germany':'🇩🇪','France':'🇫🇷','England':'🏴󠁧󠁢󠁥󠁮󠁧󠁿','Portugal':'🇵🇹',\n  'Netherlands':'🇳🇱','Belgium':'🇧🇪','Italy':'🇮🇹','Croatia':'🇭🇷',\n  'Uruguay':'🇺🇾','Colombia':'🇨🇴','Chile':'🇨🇱','USA':'🇺🇸',\n  'United States':'🇺🇸','Canada':'🇨🇦','Japan':'🇯🇵',\n  'South Korea':'🇰🇷','Korea Republic':'🇰🇷','Morocco':'🇲🇦',\n  'Senegal':'🇸🇳','Saudi Arabia':'🇸🇦','Ecuador':'🇪🇨',\n  'Costa Rica':'🇨🇷','Panama':'🇵🇦','Honduras':'🇭🇳',\n  'El Salvador':'🇸🇻','Bolivia':'🇧🇴','Paraguay':'🇵🇾',\n  'Venezuela':'🇻🇪','Australia':'🇦🇺','Poland':'🇵🇱',\n  'Switzerland':'🇨🇭','Denmark':'🇩🇰','Serbia':'🇷🇸',\n  'Ukraine':'🇺🇦','Tunisia':'🇹🇳','Nigeria':'🇳🇬',\n  'Ghana':'🇬🇭','Cameroon':'🇨🇲','Iran':'🇮🇷'\n};\nfunction flag(n) { return FLAGS[n] || '⚽'; }\n\nconst out = [];\nfor (const fix of fixtures) {\n  if (![1, 10].includes(fix.league?.id)) continue;\n  const kickoff = new Date(fix.fixture.date);\n  const diffMin = (kickoff - now) / 60000;\n  if (diffMin < 10 || diffMin > 25) continue;\n\n  const home   = fix.teams?.home?.name  || 'Local';\n  const away   = fix.teams?.away?.name  || 'Visitante';\n  const fH     = flag(home);\n  const fA     = flag(away);\n  const venue  = fix.fixture?.venue?.name || '';\n  const league = fix.league?.name || 'Internacional';\n  const id     = String(fix.fixture.id);\n  const cdmx   = new Date(kickoff.getTime() - 6*3600*1000);\n  const hhmm   = cdmx.toISOString().slice(11,16);\n\n  const lines = [\n    '🔔 PRÓXIMO PARTIDO',\n    '',\n    `${fH} ${home}  vs  ${away} ${fA}`,\n    '',\n    `📅 ${league}`,\n    venue ? `🏟 ${venue}  ·  ⏰ ${hhmm} CDMX` : `⏰ ${hhmm} CDMX`,\n    '',\n    '⏳ Faltan 15 minutos  ·  #RODAI Sport'\n  ].filter(l => l !== null);\n\n  const msg = lines.join('\\n');\n  out.push({ partido_id:id, tipo:'prepartido', detalle:`pre_${id}`,\n    home, away, msg_wa:msg, msg_tg:msg });\n}\nif (!out.length) return [{ json:{ events_count:0 } }];\nreturn out.map(e => ({ json:{ ...e, events_count: out.length } }));\n"
+        }
+      },
+      {
+        "id": "c2_ife",
+        "name": "IF Events Pre",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          720,
+          700
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true
+            },
+            "conditions": [
+              {
+                "id": "c1",
+                "leftValue": "={{ $json.events_count }}",
+                "rightValue": 0,
+                "operator": {
+                  "type": "number",
+                  "operation": "notEquals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "c2_lev",
+        "name": "Loop Pre",
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 3,
+        "position": [
+          960,
+          700
+        ],
+        "parameters": {
+          "batchSize": 1,
+          "options": {}
+        }
+      },
+      {
+        "id": "pg_subs_PRE",
+        "name": "DB Subs PRE",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.5,
+        "position": [
+          1200,
+          700
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "SELECT s.phone, s.platform, s.telegram_chat_id,\n  '{{ $json.partido_id }}' AS partido_id,\n  '{{ $json.tipo }}'       AS tipo,\n  '{{ $json.detalle }}'    AS detalle,\n  $msg_wa${{ $json.msg_wa }}$msg_wa$ AS msg_wa,\n  $msg_tg${{ $json.msg_tg }}$msg_tg$ AS msg_tg,\n  COALESCE(sp.image_url,'')  AS sponsor_image,\n  COALESCE(sp.promo_text,'') AS sponsor_promo\nFROM suscriptores s\nLEFT JOIN LATERAL (\n  SELECT image_url, promo_text FROM sponsors\n  WHERE match_id = '{{ $json.partido_id }}' AND active = true LIMIT 1\n) sp ON true\nWHERE s.active = true AND (s.paid = true OR s.demo_only = true)",
+          "options": {}
+        },
+        "credentials": {
+          "postgres": {
+            "id": "lZiJmyplRgdvifzN",
+            "name": "PG Local RODAI"
+          }
+        }
+      },
+      {
+        "id": "lp_sub_PRE",
+        "name": "Loop Subs PRE",
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 3,
+        "position": [
+          1440,
+          700
+        ],
+        "parameters": {
+          "batchSize": 1,
+          "options": {}
+        }
+      },
+      {
+        "id": "rec_PRE",
+        "name": "Recover PRE",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1680,
+          700
+        ],
+        "parameters": {
+          "jsCode": "const sub   = $('Loop Subs PRE').first().json;\nconst promo = sub.sponsor_promo || '';\nconst image = sub.sponsor_image || '';\n\nconst waFinal = promo ? sub.msg_wa + '\\n\\n' + promo : sub.msg_wa;\nconst tgFinal = sub.msg_tg;\n\nconst waPayload = {\n  messaging_product:'whatsapp', recipient_type:'individual',\n  to: sub.phone, type:'text', text:{ body: waFinal }\n};\nreturn [{ json:{\n  phone: sub.phone, platform: sub.platform,\n  telegram_chat_id: sub.telegram_chat_id,\n  partido_id: sub.partido_id, tipo: sub.tipo, detalle: sub.detalle,\n  msg_tg: tgFinal, sponsor_image: image, sponsor_promo: promo,\n  wa_body: JSON.stringify(waPayload)\n} }];"
+        }
+      },
+      {
+        "id": "ins_PRE",
+        "name": "INSERT PRE",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.5,
+        "position": [
+          1920,
+          700
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "WITH ins AS (\n  INSERT INTO alertas_enviadas (phone, partido_id, tipo, detalle, enviado_at)\n  VALUES ('{{ $json.phone }}','{{ $json.partido_id }}','{{ $json.tipo }}','{{ $json.detalle }}',NOW())\n  ON CONFLICT DO NOTHING\n  RETURNING id\n)\nSELECT COALESCE((SELECT id FROM ins), -1) AS id",
+          "options": {}
+        },
+        "credentials": {
+          "postgres": {
+            "id": "lZiJmyplRgdvifzN",
+            "name": "PG Local RODAI"
+          }
+        }
+      },
+      {
+        "id": "ifn_PRE",
+        "name": "IF New PRE",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          2160,
+          700
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true
+            },
+            "conditions": [
+              {
+                "id": "c1",
+                "leftValue": "={{ $json.id }}",
+                "rightValue": -1,
+                "operator": {
+                  "type": "number",
+                  "operation": "notEquals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "rtr_PRE",
+        "name": "Router PRE",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          2400,
+          700
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true
+            },
+            "conditions": [
+              {
+                "id": "c1",
+                "leftValue": "={{ $('Recover PRE').first().json.platform }}",
+                "rightValue": "telegram",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "tg_PRE",
+        "name": "TG PRE",
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          2640,
+          580
+        ],
+        "parameters": {
+          "resource": "message",
+          "operation": "sendMessage",
+          "chatId": "={{ $('Recover PRE').first().json.telegram_chat_id }}",
+          "text": "={{ $('Recover PRE').first().json.msg_tg }}",
+          "additionalFields": {
+            "appendAttribution": false
+          }
+        },
+        "credentials": {
+          "telegramApi": {
+            "id": "yovv0GvglRF0YNLq",
+            "name": "Telegram Bot Mundial 2026"
+          }
+        },
+        "webhookId": "efa74ba5-9946-4701-b86d-50c438875934"
+      },
+      {
+        "id": "wa_PRE",
+        "name": "WA PRE",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          2640,
+          820
+        ],
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.kapso.ai/meta/whatsapp/v24.0/1365226796664715/messages",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "X-API-Key",
+                "value": "0a46b374ad7dd08b8b3f0e2713fba33de1724d02879f5fd43c431b8bb621b984"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "string",
+          "body": "={{ $json.wa_body }}",
+          "options": {}
+        },
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "ifsp_PRE",
+        "name": "IF Sponsor PRE",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          2880,
+          580
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true
+            },
+            "conditions": [
+              {
+                "id": "c1",
+                "leftValue": "={{ $json.sponsor_image }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "notEquals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "tgph_PRE",
+        "name": "TG Photo PRE",
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          3120,
+          580
+        ],
+        "parameters": {
+          "resource": "message",
+          "operation": "sendPhoto",
+          "chatId": "={{ $('Recover PRE').first().json.telegram_chat_id }}",
+          "file": "={{ $('Recover PRE').first().json.sponsor_image }}",
+          "additionalFields": {
+            "caption": "={{ $('Recover PRE').first().json.sponsor_promo }}",
+            "appendAttribution": false
+          }
+        },
+        "credentials": {
+          "telegramApi": {
+            "id": "yovv0GvglRF0YNLq",
+            "name": "Telegram Bot Mundial 2026"
+          }
+        },
+        "webhookId": "39f92e6c-d263-4a0b-a5c8-840d3f508057"
+      },
+      {
+        "id": "c3_cron",
+        "name": "Cron Daily",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          0,
+          1300
+        ],
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "0 4 * * *"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "c3_api",
+        "name": "API Daily",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          240,
+          1300
+        ],
+        "parameters": {
+          "method": "GET",
+          "url": "={{ 'https://v3.football.api-sports.io/fixtures?date=' + $now.toFormat('yyyy-MM-dd') + '&season=2026' }}",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "options": {}
+        },
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "0O1iRnWh7lP5isWW",
+            "name": "API-Football Mundial 2026"
+          }
+        }
+      },
+      {
+        "id": "c3_js",
+        "name": "JS Daily",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          480,
+          1300
+        ],
+        "parameters": {
+          "jsCode": "\nconst data     = $input.first().json;\nconst fixtures = (data.response || []).filter(f => [1,10].includes(f.league?.id));\n\nif (!fixtures.length) return [{ json:{ events_count:0 } }];\n\nconst lines = ['📋 RESUMEN DEL DÍA — Mundial 2026', ''];\nfor (const fix of fixtures) {\n  const h  = fix.teams.home.name, a = fix.teams.away.name;\n  const hs = fix.goals?.home, as_ = fix.goals?.away;\n  const st = fix.fixture.status?.short;\n  if (['FT','AET','PEN'].includes(st))\n    lines.push(`✅ ${h} ${hs}–${as_} ${a}`);\n  else if (['1H','2H','HT','ET'].includes(st))\n    lines.push(`🔴 ${h} ${hs}–${as_} ${a} (en vivo)`);\n  else {\n    const d = new Date(fix.fixture.date);\n    const cdmxH = ((d.getUTCHours() - 6 + 24) % 24).toString().padStart(2,'0');\n    lines.push(`⏰ ${h} vs ${a} (${cdmxH}:00 CDMX)`);\n  }\n}\nlines.push('', '¡Hasta mañana! 🌙');\n\nconst msg = lines.join('\\n');\nreturn [{ json:{\n  events_count:1, partido_id:'daily', tipo:'resumen',\n  detalle:`daily_${new Date().toISOString().slice(0,10)}`,\n  msg_wa: msg.replace('/stop','STOP'),\n  msg_tg: msg\n}}];\n"
+        }
+      },
+      {
+        "id": "c3_ife",
+        "name": "IF Events Daily",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          720,
+          1300
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true
+            },
+            "conditions": [
+              {
+                "id": "c1",
+                "leftValue": "={{ $json.events_count }}",
+                "rightValue": 0,
+                "operator": {
+                  "type": "number",
+                  "operation": "notEquals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "c3_lev",
+        "name": "Loop Daily",
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 3,
+        "position": [
+          960,
+          1300
+        ],
+        "parameters": {
+          "batchSize": 1,
+          "options": {}
+        }
+      },
+      {
+        "id": "pg_subs_DAI",
+        "name": "DB Subs DAI",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.5,
+        "position": [
+          1200,
+          1300
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "SELECT s.phone, s.platform, s.telegram_chat_id,\n  '{{ $json.partido_id }}' AS partido_id,\n  '{{ $json.tipo }}'       AS tipo,\n  '{{ $json.detalle }}'    AS detalle,\n  $msg_wa${{ $json.msg_wa }}$msg_wa$ AS msg_wa,\n  $msg_tg${{ $json.msg_tg }}$msg_tg$ AS msg_tg,\n  COALESCE(sp.image_url,'')  AS sponsor_image,\n  COALESCE(sp.promo_text,'') AS sponsor_promo\nFROM suscriptores s\nLEFT JOIN LATERAL (\n  SELECT image_url, promo_text FROM sponsors\n  WHERE match_id = '{{ $json.partido_id }}' AND active = true LIMIT 1\n) sp ON true\nWHERE s.active = true AND (s.paid = true OR s.demo_only = true)",
+          "options": {}
+        },
+        "credentials": {
+          "postgres": {
+            "id": "lZiJmyplRgdvifzN",
+            "name": "PG Local RODAI"
+          }
+        }
+      },
+      {
+        "id": "lp_sub_DAI",
+        "name": "Loop Subs DAI",
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 3,
+        "position": [
+          1440,
+          1300
+        ],
+        "parameters": {
+          "batchSize": 1,
+          "options": {}
+        }
+      },
+      {
+        "id": "rec_DAI",
+        "name": "Recover DAI",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1680,
+          1300
+        ],
+        "parameters": {
+          "jsCode": "const sub   = $('Loop Subs DAI').first().json;\nconst promo = sub.sponsor_promo || '';\nconst image = sub.sponsor_image || '';\n\nconst waFinal = promo ? sub.msg_wa + '\\n\\n' + promo : sub.msg_wa;\nconst tgFinal = sub.msg_tg;\n\nconst waPayload = {\n  messaging_product:'whatsapp', recipient_type:'individual',\n  to: sub.phone, type:'text', text:{ body: waFinal }\n};\nreturn [{ json:{\n  phone: sub.phone, platform: sub.platform,\n  telegram_chat_id: sub.telegram_chat_id,\n  partido_id: sub.partido_id, tipo: sub.tipo, detalle: sub.detalle,\n  msg_tg: tgFinal, sponsor_image: image, sponsor_promo: promo,\n  wa_body: JSON.stringify(waPayload)\n} }];"
+        }
+      },
+      {
+        "id": "ins_DAI",
+        "name": "INSERT DAI",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.5,
+        "position": [
+          1920,
+          1300
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "WITH ins AS (\n  INSERT INTO alertas_enviadas (phone, partido_id, tipo, detalle, enviado_at)\n  VALUES ('{{ $json.phone }}','{{ $json.partido_id }}','{{ $json.tipo }}','{{ $json.detalle }}',NOW())\n  ON CONFLICT DO NOTHING\n  RETURNING id\n)\nSELECT COALESCE((SELECT id FROM ins), -1) AS id",
+          "options": {}
+        },
+        "credentials": {
+          "postgres": {
+            "id": "lZiJmyplRgdvifzN",
+            "name": "PG Local RODAI"
+          }
+        }
+      },
+      {
+        "id": "ifn_DAI",
+        "name": "IF New DAI",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          2160,
+          1300
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true
+            },
+            "conditions": [
+              {
+                "id": "c1",
+                "leftValue": "={{ $json.id }}",
+                "rightValue": -1,
+                "operator": {
+                  "type": "number",
+                  "operation": "notEquals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "rtr_DAI",
+        "name": "Router DAI",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          2400,
+          1300
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true
+            },
+            "conditions": [
+              {
+                "id": "c1",
+                "leftValue": "={{ $('Recover DAI').first().json.platform }}",
+                "rightValue": "telegram",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "tg_DAI",
+        "name": "TG DAI",
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          2640,
+          1180
+        ],
+        "parameters": {
+          "resource": "message",
+          "operation": "sendMessage",
+          "chatId": "={{ $('Recover DAI').first().json.telegram_chat_id }}",
+          "text": "={{ $('Recover DAI').first().json.msg_tg }}",
+          "additionalFields": {
+            "appendAttribution": false
+          }
+        },
+        "credentials": {
+          "telegramApi": {
+            "id": "yovv0GvglRF0YNLq",
+            "name": "Telegram Bot Mundial 2026"
+          }
+        },
+        "webhookId": "4338eeaf-5f24-45a9-ab09-57978a8ee2a1"
+      },
+      {
+        "id": "wa_DAI",
+        "name": "WA DAI",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          2640,
+          1420
+        ],
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.kapso.ai/meta/whatsapp/v24.0/1365226796664715/messages",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "X-API-Key",
+                "value": "0a46b374ad7dd08b8b3f0e2713fba33de1724d02879f5fd43c431b8bb621b984"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "string",
+          "body": "={{ $json.wa_body }}",
+          "options": {}
+        },
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "ifsp_DAI",
+        "name": "IF Sponsor DAI",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          2880,
+          1180
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true
+            },
+            "conditions": [
+              {
+                "id": "c1",
+                "leftValue": "={{ $json.sponsor_image }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "notEquals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "tgph_DAI",
+        "name": "TG Photo DAI",
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          3120,
+          1180
+        ],
+        "parameters": {
+          "resource": "message",
+          "operation": "sendPhoto",
+          "chatId": "={{ $('Recover DAI').first().json.telegram_chat_id }}",
+          "file": "={{ $('Recover DAI').first().json.sponsor_image }}",
+          "additionalFields": {
+            "caption": "={{ $('Recover DAI').first().json.sponsor_promo }}",
+            "appendAttribution": false
+          }
+        },
+        "credentials": {
+          "telegramApi": {
+            "id": "yovv0GvglRF0YNLq",
+            "name": "Telegram Bot Mundial 2026"
+          }
+        },
+        "webhookId": "883ee8e1-9e1e-473a-ad0c-b3a9f639649d"
+      },
+      {
+        "id": "if_sg_evt",
+        "name": "IF Single Photo EVT",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          2880,
+          80
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true
+            },
+            "combinator": "and",
+            "conditions": [
+              {
+                "id": "sg1",
+                "leftValue": "={{ $json.use_single_photo }}",
+                "rightValue": "yes",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ]
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "tg_sg_evt",
+        "name": "TG Single Photo EVT",
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          3120,
+          -20
+        ],
+        "parameters": {
+          "resource": "message",
+          "operation": "sendPhoto",
+          "chatId": "={{ $('Recover EVT').first().json.telegram_chat_id }}",
+          "file": "={{ $json.sponsor_image }}",
+          "additionalFields": {
+            "caption": "={{ $json.tg_caption }}",
+            "appendAttribution": false
+          }
+        },
+        "credentials": {
+          "telegramApi": {
+            "id": "yovv0GvglRF0YNLq",
+            "name": "Telegram Bot Mundial 2026"
+          }
+        },
+        "webhookId": "9c00f5cd-b643-4b1c-9781-0c0e6db4117b"
+      },
+      {
+        "id": "ai_prep_evt",
+        "name": "AI Prep EVT",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1200,
+          420
+        ],
+        "parameters": {
+          "jsCode": "\nconst e = $input.first().json;\nconst tipo = e.tipo || 'evento';\nconst home = e.home || 'Local';\nconst away = e.away || 'Visitante';\nconst hs   = e.hs  !== undefined ? e.hs  : (e.goals?.home  ?? 0);\nconst as_  = e.as_ !== undefined ? e.as_ : (e.goals?.away  ?? 0);\n\nlet promptLines = [`TIPO DE ALERTA: ${tipo.toUpperCase()}`, `Partido: ${home} vs ${away}`, `Marcador: ${home} ${hs} — ${as_} ${away}`];\n\nif (tipo === 'goal') {\n  if (e.scorer || e.last_scorer)  promptLines.push(`Goleador: ${e.scorer || e.last_scorer || '?'}`);\n  if (e.assist || e.last_assist)  promptLines.push(`Asistencia: ${e.assist || e.last_assist}`);\n  if (e.detail || e.last_detail)  promptLines.push(`Tipo de gol: ${e.detail || e.last_detail}`);\n  if (e.elapsed || e.last_minute) promptLines.push(`Minuto: ${e.elapsed || e.last_minute}'`);\n  if (e.narrative)                promptLines.push(`Narrativa: ${e.narrative}`);\n  if (e.ctxLabel)                 promptLines.push(`Contexto: ${e.ctxLabel}`);\n}\nif (tipo === 'halftime') {\n  promptLines.push('Evento: FIN PRIMER TIEMPO');\n  if (e.goals_ht && e.goals_ht.length) promptLines.push(`Goles 1T: ${e.goals_ht.map(g=>g.player?.name+'('+g.time?.elapsed+\"')\").join(', ')}`);\n}\nif (tipo === 'h2_start')  promptLines.push('Evento: INICIO SEGUNDO TIEMPO');\nif (tipo === 'fulltime') {\n  promptLines.push('Evento: RESULTADO FINAL');\n  if (e.mvp_name) promptLines.push(`MVP: ${e.mvp_name}`);\n  if (e.winner)   promptLines.push(`Ganador: ${e.winner}`);\n}\nif (tipo === 'kickoff') {\n  if (e.venue)  promptLines.push(`Estadio: ${e.venue}`);\n  if (e.league) promptLines.push(`Liga: ${e.league}`);\n  promptLines.push('Evento: INICIO DEL PARTIDO');\n}\nif (tipo === 'prepartido') {\n  if (e.venue)  promptLines.push(`Estadio: ${e.venue}`);\n  if (e.hhmm)   promptLines.push(`Hora: ${e.hhmm} CDMX`);\n  if (e.league) promptLines.push(`Liga: ${e.league}`);\n  promptLines.push('Evento: PRÓXIMO PARTIDO (15 min)');\n}\nif (tipo === 'resumen') {\n  promptLines.push('Lista de partidos del día con resultados incluida en narrativa');\n}\n\nreturn [{ json: { ...e, ai_prompt: promptLines.join('\\n') } }];\n"
+        }
+      },
+      {
+        "id": "ai_agent_evt",
+        "name": "AI Enrich EVT",
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 1.7,
+        "position": [
+          1440,
+          420
+        ],
+        "parameters": {
+          "agent": "conversationalAgent",
+          "promptType": "define",
+          "text": "={{ $json.ai_prompt }}",
+          "options": {
+            "systemMessage": "Eres el cronista oficial de RODAI Sport para el Mundial FIFA 2026.\nTu tarea: generar UN mensaje de alerta deportiva en español para enviar a fanáticos por Telegram/WhatsApp.\n\nREGLAS OBLIGATORIAS:\n- Máximo 150 palabras\n- Líneas cortas (1 idea por línea, máx 60 caracteres)\n- Emojis relevantes (máx 6 en todo el mensaje)\n- CERO markdown (no **, no ##, no _texto_)\n- Tono: emocionante como locutor de radio deportivo\n- Siempre el marcador exacto con banderas\n- Última línea siempre: ⏱ Xmin · #RODAI Sport  (o ⏱ Final · #RODAI Sport)\n- NO links, NO hashtags extras, NO publicidad\n- Devuelve SOLO el mensaje, sin ninguna explicación adicional\n\nTIPOS DE ALERTA que puedes recibir:\n  kickoff   → inicio de partido\n  goal      → gol anotado\n  halftime  → fin primer tiempo\n  h2_start  → inicio segundo tiempo\n  fulltime  → resultado final\n  prepartido → 15 min antes del partido\n  resumen   → resumen del día",
+            "maxIterations": 1
+          }
+        }
+      },
+      {
+        "id": "ai_lm_evt",
+        "name": "AI LM EVT",
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.2,
+        "position": [
+          1440,
+          600
+        ],
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "value": "gpt-4o-mini",
+            "mode": "list",
+            "cachedResultName": "gpt-4o-mini"
+          },
+          "options": {
+            "maxTokens": 400,
+            "temperature": 0.75
+          }
+        },
+        "credentials": {
+          "openAiApi": {
+            "id": "DNniMXGQP8C9zu5z",
+            "name": "OpenAi account 2"
+          }
+        }
+      },
+      {
+        "id": "ai_post_evt",
+        "name": "AI Post EVT",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1680,
+          420
+        ],
+        "parameters": {
+          "jsCode": "\nconst ai   = ($json.output || '').trim();\n// fallback to original message if AI returned empty\nconst prep = $input.first().json;\nconst msg  = ai.length > 20 ? ai : (prep.msg_tg || '');\nreturn [{ json: { ...prep, msg_tg: msg, msg_wa: msg, ai_enriched: true } }];\n"
+        }
+      },
+      {
+        "id": "ai_prep_pre",
+        "name": "AI Prep PRE",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1200,
+          910
+        ],
+        "parameters": {
+          "jsCode": "\nconst e = $input.first().json;\nconst home = e.home || 'Local';\nconst away = e.away || 'Visitante';\nlet promptLines = [\n  'TIPO DE ALERTA: PREPARTIDO',\n  `Partido: ${home} vs ${away}`,\n  `Evento: PRÓXIMO PARTIDO (15 min)`\n];\nif (e.venue)  promptLines.push(`Estadio: ${e.venue}`);\nif (e.hhmm)   promptLines.push(`Hora: ${e.hhmm} CDMX`);\nif (e.league) promptLines.push(`Liga: ${e.league}`);\nreturn [{ json: { ...e, ai_prompt: promptLines.join('\\n') } }];\n"
+        }
+      },
+      {
+        "id": "ai_agent_pre",
+        "name": "AI Enrich PRE",
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 1.7,
+        "position": [
+          1440,
+          910
+        ],
+        "parameters": {
+          "agent": "conversationalAgent",
+          "promptType": "define",
+          "text": "={{ $json.ai_prompt }}",
+          "options": {
+            "systemMessage": "Eres el cronista oficial de RODAI Sport para el Mundial FIFA 2026.\nTu tarea: generar UN mensaje de alerta deportiva en español para enviar a fanáticos por Telegram/WhatsApp.\n\nREGLAS OBLIGATORIAS:\n- Máximo 150 palabras\n- Líneas cortas (1 idea por línea, máx 60 caracteres)\n- Emojis relevantes (máx 6 en todo el mensaje)\n- CERO markdown (no **, no ##, no _texto_)\n- Tono: emocionante como locutor de radio deportivo\n- Siempre el marcador exacto con banderas\n- Última línea siempre: ⏱ Xmin · #RODAI Sport  (o ⏱ Final · #RODAI Sport)\n- NO links, NO hashtags extras, NO publicidad\n- Devuelve SOLO el mensaje, sin ninguna explicación adicional\n\nTIPOS DE ALERTA que puedes recibir:\n  kickoff   → inicio de partido\n  goal      → gol anotado\n  halftime  → fin primer tiempo\n  h2_start  → inicio segundo tiempo\n  fulltime  → resultado final\n  prepartido → 15 min antes del partido\n  resumen   → resumen del día",
+            "maxIterations": 1
+          }
+        }
+      },
+      {
+        "id": "ai_lm_pre",
+        "name": "AI LM PRE",
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.2,
+        "position": [
+          1440,
+          1090
+        ],
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "value": "gpt-4o-mini",
+            "mode": "list",
+            "cachedResultName": "gpt-4o-mini"
+          },
+          "options": {
+            "maxTokens": 400,
+            "temperature": 0.75
+          }
+        },
+        "credentials": {
+          "openAiApi": {
+            "id": "DNniMXGQP8C9zu5z",
+            "name": "OpenAi account 2"
+          }
+        }
+      },
+      {
+        "id": "ai_post_pre",
+        "name": "AI Post PRE",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1680,
+          910
+        ],
+        "parameters": {
+          "jsCode": "\nconst ai   = ($json.output || '').trim();\n// fallback to original message if AI returned empty\nconst prep = $input.first().json;\nconst msg  = ai.length > 20 ? ai : (prep.msg_tg || '');\nreturn [{ json: { ...prep, msg_tg: msg, msg_wa: msg, ai_enriched: true } }];\n"
+        }
+      },
+      {
+        "id": "ai_prep_dai",
+        "name": "AI Prep DAI",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1200,
+          1510
+        ],
+        "parameters": {
+          "jsCode": "\nconst e = $input.first().json;\nlet promptLines = [\n  'TIPO DE ALERTA: RESUMEN DEL DÍA',\n  'Evento: RESUMEN DIARIO MUNDIAL FIFA 2026',\n  'Mensaje base a enriquecer:'\n];\nif (e.msg_tg) promptLines.push(e.msg_tg);\nreturn [{ json: { ...e, ai_prompt: promptLines.join('\\n') } }];\n"
+        }
+      },
+      {
+        "id": "ai_agent_dai",
+        "name": "AI Enrich DAI",
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 1.7,
+        "position": [
+          1440,
+          1510
+        ],
+        "parameters": {
+          "agent": "conversationalAgent",
+          "promptType": "define",
+          "text": "={{ $json.ai_prompt }}",
+          "options": {
+            "systemMessage": "Eres el cronista oficial de RODAI Sport para el Mundial FIFA 2026.\nTu tarea: generar UN mensaje de alerta deportiva en español para enviar a fanáticos por Telegram/WhatsApp.\n\nREGLAS OBLIGATORIAS:\n- Máximo 150 palabras\n- Líneas cortas (1 idea por línea, máx 60 caracteres)\n- Emojis relevantes (máx 6 en todo el mensaje)\n- CERO markdown (no **, no ##, no _texto_)\n- Tono: emocionante como locutor de radio deportivo\n- Siempre el marcador exacto con banderas\n- Última línea siempre: ⏱ Xmin · #RODAI Sport  (o ⏱ Final · #RODAI Sport)\n- NO links, NO hashtags extras, NO publicidad\n- Devuelve SOLO el mensaje, sin ninguna explicación adicional\n\nTIPOS DE ALERTA que puedes recibir:\n  kickoff   → inicio de partido\n  goal      → gol anotado\n  halftime  → fin primer tiempo\n  h2_start  → inicio segundo tiempo\n  fulltime  → resultado final\n  prepartido → 15 min antes del partido\n  resumen   → resumen del día",
+            "maxIterations": 1
+          }
+        }
+      },
+      {
+        "id": "ai_lm_dai",
+        "name": "AI LM DAI",
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.2,
+        "position": [
+          1440,
+          1690
+        ],
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "value": "gpt-4o-mini",
+            "mode": "list",
+            "cachedResultName": "gpt-4o-mini"
+          },
+          "options": {
+            "maxTokens": 400,
+            "temperature": 0.75
+          }
+        },
+        "credentials": {
+          "openAiApi": {
+            "id": "DNniMXGQP8C9zu5z",
+            "name": "OpenAi account 2"
+          }
+        }
+      },
+      {
+        "id": "ai_post_dai",
+        "name": "AI Post DAI",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1680,
+          1510
+        ],
+        "parameters": {
+          "jsCode": "\nconst ai   = ($json.output || '').trim();\n// fallback to original message if AI returned empty\nconst prep = $input.first().json;\nconst msg  = ai.length > 20 ? ai : (prep.msg_tg || '');\nreturn [{ json: { ...prep, msg_tg: msg, msg_wa: msg, ai_enriched: true } }];\n"
+        }
+      }
+    ],
+    "connections": {
+      "Cron Live": {
+        "main": [
+          [
+            {
+              "node": "API Live",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "API Live": {
+        "main": [
+          [
+            {
+              "node": "JS Live",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "JS Live": {
+        "main": [
+          [
+            {
+              "node": "IF Events Live",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "IF Events Live": {
+        "main": [
+          [
+            {
+              "node": "Loop Eventos",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Loop Eventos": {
+        "main": [
+          [],
+          [
+            {
+              "node": "IF Kickoff",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "IF Kickoff": {
+        "main": [
+          [
+            {
+              "node": "Prep Lineup",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "AI Prep EVT",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prep Lineup": {
+        "main": [
+          [
+            {
+              "node": "HTTP Lineups",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "HTTP Lineups": {
+        "main": [
+          [
+            {
+              "node": "Build Lineup",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "DB Subs KO": {
+        "main": [
+          [
+            {
+              "node": "Loop Subs KO",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Loop Subs KO": {
+        "main": [
+          [
+            {
+              "node": "Loop Eventos",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Recover KO",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Recover KO": {
+        "main": [
+          [
+            {
+              "node": "INSERT KO",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "INSERT KO": {
+        "main": [
+          [
+            {
+              "node": "IF New KO",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "IF New KO": {
+        "main": [
+          [
+            {
+              "node": "Router KO",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Loop Subs KO",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Router KO": {
+        "main": [
+          [
+            {
+              "node": "TG KO",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "WA KO",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "TG KO": {
+        "main": [
+          [
+            {
+              "node": "IF Sponsor KO",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "IF Sponsor KO": {
+        "main": [
+          [
+            {
+              "node": "TG Photo KO",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Loop Subs KO",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Build Lineup": {
+        "main": [
+          [
+            {
+              "node": "DB Subs KO",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "DB Subs EVT": {
+        "main": [
+          [
+            {
+              "node": "Loop Subs EVT",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Loop Subs EVT": {
+        "main": [
+          [
+            {
+              "node": "Loop Eventos",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Recover EVT",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Recover EVT": {
+        "main": [
+          [
+            {
+              "node": "INSERT EVT",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "INSERT EVT": {
+        "main": [
+          [
+            {
+              "node": "IF New EVT",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "IF New EVT": {
+        "main": [
+          [
+            {
+              "node": "Router EVT",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Loop Subs EVT",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Router EVT": {
+        "main": [
+          [
+            {
+              "node": "IF Single Photo EVT",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "WA EVT",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "TG EVT": {
+        "main": [
+          [
+            {
+              "node": "IF Sponsor EVT",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "IF Sponsor EVT": {
+        "main": [
+          [
+            {
+              "node": "TG Photo EVT",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Loop Subs EVT",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Cron Pre": {
+        "main": [
+          [
+            {
+              "node": "API Hoy",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "API Hoy": {
+        "main": [
+          [
+            {
+              "node": "JS Pre",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "JS Pre": {
+        "main": [
+          [
+            {
+              "node": "IF Events Pre",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "IF Events Pre": {
+        "main": [
+          [
+            {
+              "node": "Loop Pre",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Loop Pre": {
+        "main": [
+          [],
+          [
+            {
+              "node": "AI Prep PRE",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "DB Subs PRE": {
+        "main": [
+          [
+            {
+              "node": "Loop Subs PRE",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Loop Subs PRE": {
+        "main": [
+          [
+            {
+              "node": "Loop Pre",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Recover PRE",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Recover PRE": {
+        "main": [
+          [
+            {
+              "node": "INSERT PRE",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "INSERT PRE": {
+        "main": [
+          [
+            {
+              "node": "IF New PRE",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "IF New PRE": {
+        "main": [
+          [
+            {
+              "node": "Router PRE",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Loop Subs PRE",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Router PRE": {
+        "main": [
+          [
+            {
+              "node": "TG PRE",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "WA PRE",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "TG PRE": {
+        "main": [
+          [
+            {
+              "node": "IF Sponsor PRE",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "IF Sponsor PRE": {
+        "main": [
+          [
+            {
+              "node": "TG Photo PRE",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Loop Subs PRE",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Cron Daily": {
+        "main": [
+          [
+            {
+              "node": "API Daily",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "API Daily": {
+        "main": [
+          [
+            {
+              "node": "JS Daily",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "JS Daily": {
+        "main": [
+          [
+            {
+              "node": "IF Events Daily",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "IF Events Daily": {
+        "main": [
+          [
+            {
+              "node": "Loop Daily",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Loop Daily": {
+        "main": [
+          [],
+          [
+            {
+              "node": "AI Prep DAI",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "DB Subs DAI": {
+        "main": [
+          [
+            {
+              "node": "Loop Subs DAI",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Loop Subs DAI": {
+        "main": [
+          [
+            {
+              "node": "Loop Daily",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Recover DAI",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Recover DAI": {
+        "main": [
+          [
+            {
+              "node": "INSERT DAI",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "INSERT DAI": {
+        "main": [
+          [
+            {
+              "node": "IF New DAI",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "IF New DAI": {
+        "main": [
+          [
+            {
+              "node": "Router DAI",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Loop Subs DAI",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Router DAI": {
+        "main": [
+          [
+            {
+              "node": "TG DAI",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "WA DAI",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "TG DAI": {
+        "main": [
+          [
+            {
+              "node": "IF Sponsor DAI",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "IF Sponsor DAI": {
+        "main": [
+          [
+            {
+              "node": "TG Photo DAI",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Loop Subs DAI",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "IF Single Photo EVT": {
+        "main": [
+          [
+            {
+              "node": "TG Single Photo EVT",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "TG EVT",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "WA EVT": {
+        "main": [
+          [
+            {
+              "node": "Loop Subs EVT",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "TG Photo EVT": {
+        "main": [
+          [
+            {
+              "node": "Loop Subs EVT",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "TG Single Photo EVT": {
+        "main": [
+          [
+            {
+              "node": "Loop Subs EVT",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "WA KO": {
+        "main": [
+          [
+            {
+              "node": "Loop Subs KO",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "TG Photo KO": {
+        "main": [
+          [
+            {
+              "node": "Loop Subs KO",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "WA PRE": {
+        "main": [
+          [
+            {
+              "node": "Loop Subs PRE",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "TG Photo PRE": {
+        "main": [
+          [
+            {
+              "node": "Loop Subs PRE",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "WA DAI": {
+        "main": [
+          [
+            {
+              "node": "Loop Subs DAI",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "TG Photo DAI": {
+        "main": [
+          [
+            {
+              "node": "Loop Subs DAI",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AI Prep EVT": {
+        "main": [
+          [
+            {
+              "node": "AI Enrich EVT",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AI Enrich EVT": {
+        "main": [
+          [
+            {
+              "node": "AI Post EVT",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AI Post EVT": {
+        "main": [
+          [
+            {
+              "node": "DB Subs EVT",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AI LM EVT": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AI Enrich EVT",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AI Prep PRE": {
+        "main": [
+          [
+            {
+              "node": "AI Enrich PRE",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AI Enrich PRE": {
+        "main": [
+          [
+            {
+              "node": "AI Post PRE",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AI Post PRE": {
+        "main": [
+          [
+            {
+              "node": "DB Subs PRE",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AI LM PRE": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AI Enrich PRE",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AI Prep DAI": {
+        "main": [
+          [
+            {
+              "node": "AI Enrich DAI",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AI Enrich DAI": {
+        "main": [
+          [
+            {
+              "node": "AI Post DAI",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AI Post DAI": {
+        "main": [
+          [
+            {
+              "node": "DB Subs DAI",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AI LM DAI": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AI Enrich DAI",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Erick RODAI",
+    "name": null,
+    "description": null,
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-06-10T16:08:21.734Z",
+        "id": 1960,
+        "workflowId": "eArw5zghtsxxaoCn",
+        "versionId": "dc2ba003-7435-42a1-89f4-6cb6ce22d6ec",
+        "event": "activated",
+        "userId": "111326d0-ca57-4427-a4d0-5c6508637090"
+      },
+      {
+        "createdAt": "2026-06-10T16:08:21.718Z",
+        "id": 1959,
+        "workflowId": "eArw5zghtsxxaoCn",
+        "versionId": "dc2ba003-7435-42a1-89f4-6cb6ce22d6ec",
+        "event": "deactivated",
+        "userId": "111326d0-ca57-4427-a4d0-5c6508637090"
+      }
+    ]
+  }
+}

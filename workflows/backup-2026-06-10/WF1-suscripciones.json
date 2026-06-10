@@ -1,0 +1,3009 @@
+{
+  "updatedAt": "2026-06-10T16:46:23.453Z",
+  "createdAt": "2026-06-09T01:38:17.228Z",
+  "id": "cI5WRRTgnqkInqq0",
+  "name": "🌍 Mundial 2026 — Suscripciones",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "id": "tg-trigger",
+      "name": "Telegram — Mensajes entrantes",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        208,
+        -76
+      ],
+      "webhookId": "mundial-telegram-trigger",
+      "credentials": {
+        "telegramApi": {
+          "id": "yovv0GvglRF0YNLq",
+          "name": "Telegram Bot Mundial 2026"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "mundial-logic",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "wh-whatsapp",
+      "name": "WhatsApp — ALTA/STOP desde Kapso",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        208,
+        1104
+      ],
+      "webhookId": "e5f41f18-a8a7-44fc-b823-945c3075f1a5"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "stripe-mundial",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "wh-stripe",
+      "name": "Stripe — Pago completado",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        208,
+        1496
+      ],
+      "webhookId": "8c2e14b8-4234-4c7d-8e37-c901f1971096"
+    },
+    {
+      "parameters": {
+        "path": "mundial-admin",
+        "responseMode": "responseNode",
+        "options": {},
+        "httpMethod": "GET"
+      },
+      "id": "wh-admin",
+      "name": "Admin — Stats",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        208,
+        1816
+      ],
+      "webhookId": "f121ba0d-d184-47b8-9d94-41c9f771e0bc"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst item = $input.first().json;\nconst text = (item.message?.text || '').toLowerCase().trim();\nconst hasContact = !!(item.message?.contact?.phone_number);\nlet route = 'pregunta';\nif (hasContact) route = 'contact';\nelse if (text.includes('alta')) route = 'alta';\nelse if (text.includes('stop')) route = 'stop';\nreturn [{ json: { ...item, _route: route } }];\n"
+      },
+      "id": "tg-parse",
+      "name": "TG — Router",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        432,
+        -76
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO suscriptores\n  (name, platform, telegram_chat_id, telegram_username,\n   active, demo_only, subscribed_at, created_at, updated_at)\nVALUES (\n  '{{ $json.message.from.first_name || \"\" }}',\n  'telegram',\n  {{ $json.message.from.id }},\n  '{{ $json.message.from.username || \"\" }}',\n  true, true, NOW(), NOW(), NOW()\n)\nON CONFLICT (telegram_chat_id) DO UPDATE SET\n  active            = true,\n  name              = EXCLUDED.name,\n  telegram_username = EXCLUDED.telegram_username,\n  updated_at        = NOW()\nRETURNING telegram_chat_id, name;",
+        "options": {}
+      },
+      "id": "tg-alta-db",
+      "name": "TG ALTA — Guardar en DB",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1104,
+        -32
+      ],
+      "webhookId": "8adaa991-b48a-4094-94f6-aeadc22aaae3",
+      "credentials": {
+        "postgres": {
+          "id": "lZiJmyplRgdvifzN",
+          "name": "PG Local RODAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.telegram_chat_id }}",
+        "text": "✅ *¡Listo, {{ $json.name }}!*\n\nYa estás suscrito a las alertas del *Mundial 2026* 🏆\n\nRecibirás:\n⚽ Goles en tiempo real\n🟢 Inicio del partido\n📋 Alineaciones\n🏁 Resultado final\n📊 Resumen del día\n\nEl primer partido de México es el *11 de junio vs Sudáfrica*. ¡Nos vemos ahí! 🇲🇽\n\n_Escribe STOP para cancelar en cualquier momento._",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "tg-alta-msg",
+      "name": "TG ALTA — Confirmar registro",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        208,
+        784
+      ],
+      "webhookId": "b2090d37-c9fc-4ab4-9071-703d140f98e5",
+      "credentials": {
+        "telegramApi": {
+          "id": "yovv0GvglRF0YNLq",
+          "name": "Telegram Bot Mundial 2026"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE suscriptores SET active = false, updated_at = NOW() WHERE telegram_chat_id = {{ $json.message.from.id }};",
+        "options": {}
+      },
+      "id": "tg-stop-db",
+      "name": "Telegram STOP — Dar de baja",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1392,
+        116
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "lZiJmyplRgdvifzN",
+          "name": "PG Local RODAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram — Mensajes entrantes').item.json.message.chat.id }}",
+        "text": "✅ Te dimos de baja de las alertas del Mundial. Puedes volver cuando quieras enviando ALTA. ¡Hasta pronto!",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "tg-stop-msg",
+      "name": "Telegram STOP — Confirmar baja",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1680,
+        116
+      ],
+      "webhookId": "196eb699-273d-42ce-9b61-67a1ac41ce03",
+      "credentials": {
+        "telegramApi": {
+          "id": "yovv0GvglRF0YNLq",
+          "name": "Telegram Bot Mundial 2026"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.message_text }}",
+                    "rightValue": "ALTA",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "alta"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.message_text }}",
+                    "rightValue": "STOP",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "stop"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wa-parse",
+      "name": "WhatsApp — Detectar ALTA o STOP",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        432,
+        1104
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO suscriptores (phone, platform, active, demo_only, subscribed_at, created_at, updated_at, country)\nVALUES ('{{ $json.body.phone }}', 'whatsapp', true, true, NOW(), NOW(), NOW(), {{ $json.detected_country ? \"'\" + $json.detected_country + \"'\" : 'NULL' }})\nON CONFLICT (phone) DO UPDATE SET active = true, platform = 'whatsapp', updated_at = NOW(), country = COALESCE(EXCLUDED.country, suscriptores.country);",
+        "options": {}
+      },
+      "id": "wa-alta-db",
+      "name": "WhatsApp ALTA — Guardar en DB",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        880,
+        1008
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "lZiJmyplRgdvifzN",
+          "name": "PG Local RODAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{ \"status\": \"subscribed\" }",
+        "options": {}
+      },
+      "id": "wa-alta-respond",
+      "name": "WhatsApp ALTA — Responder OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1104,
+        1008
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE suscriptores SET active = false, updated_at = NOW() WHERE phone = '{{ $json.body.phone }}';",
+        "options": {}
+      },
+      "id": "wa-stop-db",
+      "name": "WhatsApp STOP — Dar de baja",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        656,
+        1200
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "lZiJmyplRgdvifzN",
+          "name": "PG Local RODAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{ \"status\": \"unsubscribed\" }",
+        "options": {}
+      },
+      "id": "wa-stop-respond",
+      "name": "WhatsApp STOP — Responder OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        880,
+        1200
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.body.type }}",
+              "rightValue": "checkout.session.completed",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "stripe-check",
+      "name": "Stripe — Es checkout completado?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        432,
+        1496
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO suscriptores (phone, email, stripe_session_id, paid, paid_at, active, demo_only, platform, subscribed_at, created_at, updated_at)\nVALUES (\n  COALESCE(NULLIF('{{ $json.body.data.object.customer_details.phone }}', ''), 'stripe_{{ $json.body.data.object.id }}'),\n  '{{ $json.body.data.object.customer_details.email }}',\n  '{{ $json.body.data.object.id }}',\n  true, NOW(), true, false, 'whatsapp', NOW(), NOW(), NOW()\n)\nON CONFLICT (phone) DO UPDATE SET\n  paid = true, paid_at = NOW(), active = true, demo_only = false,\n  email = EXCLUDED.email, stripe_session_id = EXCLUDED.stripe_session_id,\n  updated_at = NOW();\nSELECT phone, email, paid FROM suscriptores WHERE stripe_session_id = '{{ $json.body.data.object.id }}';",
+        "options": {}
+      },
+      "id": "stripe-db",
+      "name": "Stripe — Activar suscriptor pagado",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        656,
+        1424
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "lZiJmyplRgdvifzN",
+          "name": "PG Local RODAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kapso.ai/meta/whatsapp/v24.0/597907523413541/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer b65754e64505dc1de08e536ba6232c79c0f6f10a0b9c4fe6933be70daa3aa213"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"messaging_product\": \"whatsapp\", \"to\": \"{{ $('Stripe — Activar suscriptor pagado').item.json.phone }}\", \"type\": \"text\", \"text\": { \"body\": \"🏆 ¡Pago confirmado! Bienvenido a Alertas Mundial 2026.\\n\\nRecibirás alertas de todos los partidos hasta el 19 de julio.\\n\\nMéxico juega el 11 jun vs Sudáfrica. ¡Vamos México! 🇲🇽\\n\\nResponde STOP para cancelar.\" } }",
+        "options": {}
+      },
+      "id": "stripe-welcome-wa",
+      "name": "Stripe — Bienvenida WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        1424
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "ok",
+        "options": {}
+      },
+      "id": "stripe-respond",
+      "name": "Stripe — Responder 200",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1104,
+        1496
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $('Admin — Stats').first().json['headers']['x-admin-key'] }}",
+              "rightValue": "mundial-admin-2026-rodai",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "admin-check-key",
+      "name": "Admin — Verificar API Key",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        432,
+        1816
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  (SELECT COUNT(*) FROM suscriptores WHERE active = true)::text  AS activos,\n  (SELECT COUNT(*) FROM suscriptores WHERE active = false)::text AS bajas,\n  (SELECT COUNT(*) FROM suscriptores)::text                      AS total,\n  (SELECT COUNT(*) FROM suscriptores WHERE paid = true)::text    AS pagados,\n  (SELECT COUNT(*) FROM suscriptores WHERE platform = 'telegram')::text AS telegram,\n  (SELECT COUNT(*) FROM suscriptores WHERE platform = 'whatsapp')::text AS whatsapp,\n  (\n    SELECT json_agg(json_build_object(\n      'id', id, 'name', name, 'phone', phone,\n      'platform', platform, 'country', country,\n      'active', active, 'paid', paid, 'demo_only', demo_only,\n      'subscribed_at', subscribed_at\n    ) ORDER BY id DESC)\n    FROM suscriptores\n  ) AS suscriptores",
+        "options": {}
+      },
+      "id": "admin-query",
+      "name": "Admin — Consultar DB",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        656,
+        1720
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "lZiJmyplRgdvifzN",
+          "name": "PG Local RODAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Cache-Control",
+                "value": "no-store, no-cache, must-revalidate, proxy-revalidate"
+              },
+              {
+                "name": "Pragma",
+                "value": "no-cache"
+              },
+              {
+                "name": "Expires",
+                "value": "0"
+              }
+            ]
+          }
+        }
+      },
+      "id": "admin-respond-ok",
+      "name": "Admin — Responder stats",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        880,
+        1720
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{ \"error\": \"Unauthorized\" }",
+        "options": {
+          "responseCode": 401
+        }
+      },
+      "id": "admin-respond-401",
+      "name": "Admin — Responder 401",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        656,
+        1912
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "\nfunction detectCountry(phone) {\n  const p = String(phone || '').replace(/\\D/g, '');\n  if (p.startsWith('502')) return 'Guatemala';\n  if (p.startsWith('503')) return 'El Salvador';\n  if (p.startsWith('504')) return 'Honduras';\n  if (p.startsWith('505')) return 'Nicaragua';\n  if (p.startsWith('506')) return 'Costa Rica';\n  if (p.startsWith('507')) return 'Panamá';\n  if (p.startsWith('509')) return 'Haití';\n  if (p.startsWith('591')) return 'Bolivia';\n  if (p.startsWith('593')) return 'Ecuador';\n  if (p.startsWith('595')) return 'Paraguay';\n  if (p.startsWith('598')) return 'Uruguay';\n  if (p.startsWith('51')) return 'Perú';\n  if (p.startsWith('52')) return 'México';\n  if (p.startsWith('53')) return 'Cuba';\n  if (p.startsWith('54')) return 'Argentina';\n  if (p.startsWith('55')) return 'Brasil';\n  if (p.startsWith('56')) return 'Chile';\n  if (p.startsWith('57')) return 'Colombia';\n  if (p.startsWith('58')) return 'Venezuela';\n  if (p.startsWith('1809') || p.startsWith('1829') || p.startsWith('1849')) return 'Rep. Dominicana';\n  if (p.startsWith('1787') || p.startsWith('1939')) return 'Puerto Rico';\n  if (p.startsWith('1')) return 'USA/Canadá';\n  if (p.startsWith('34')) return 'España';\n  if (p.startsWith('351')) return 'Portugal';\n  if (p.startsWith('33')) return 'Francia';\n  if (p.startsWith('44')) return 'Reino Unido';\n  if (p.startsWith('49')) return 'Alemania';\n  if (p.startsWith('39')) return 'Italia';\n  if (p.startsWith('31')) return 'Países Bajos';\n  if (p.startsWith('32')) return 'Bélgica';\n  if (p.startsWith('81')) return 'Japón';\n  if (p.startsWith('82')) return 'Corea del Sur';\n  if (p.startsWith('86')) return 'China';\n  if (p.startsWith('966')) return 'Arabia Saudita';\n  if (p.startsWith('971')) return 'Emiratos Árabes';\n  if (p.startsWith('52')) return 'México';\n  return null;\n}\n\nconst d = $input.first().json;\nconst phone = d.body?.phone || '';\nconst country = detectCountry(phone);\nreturn [{ json: { ...d, detected_country: country } }];\n"
+      },
+      "id": "wa_country",
+      "name": "WA — Detectar País",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        656,
+        1008
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "\nfunction langToCountry(lang) {\n  const map = {\n    'es': 'Latinoamérica/España', 'es-mx': 'México', 'es-ar': 'Argentina',\n    'es-co': 'Colombia', 'es-es': 'España', 'es-cl': 'Chile',\n    'en': 'USA/UK', 'en-us': 'USA', 'en-gb': 'Reino Unido',\n    'pt': 'Brasil/Portugal', 'pt-br': 'Brasil', 'pt-pt': 'Portugal',\n    'fr': 'Francia', 'de': 'Alemania', 'it': 'Italia',\n    'ja': 'Japón', 'ko': 'Corea del Sur', 'zh': 'China',\n    'ar': 'Árabe', 'ru': 'Rusia', 'tr': 'Turquía',\n    'nl': 'Países Bajos', 'pl': 'Polonia', 'uk': 'Ucrania'\n  };\n  return map[(lang||'').toLowerCase()] || null;\n}\n\nconst d = $input.first().json;\nconst lang = d.message?.from?.language_code || '';\nconst country = langToCountry(lang);\nreturn [{ json: { ...d, detected_country: country } }];\n"
+      },
+      "id": "tg_country",
+      "name": "TG — Detectar País",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "\nfunction detectCountry(phone) {\n  const p = String(phone||'').replace(/\\D/g,'');\n  if(p.startsWith('502')) return 'Guatemala';\n  if(p.startsWith('503')) return 'El Salvador';\n  if(p.startsWith('504')) return 'Honduras';\n  if(p.startsWith('505')) return 'Nicaragua';\n  if(p.startsWith('506')) return 'Costa Rica';\n  if(p.startsWith('507')) return 'Panamá';\n  if(p.startsWith('591')) return 'Bolivia';\n  if(p.startsWith('593')) return 'Ecuador';\n  if(p.startsWith('595')) return 'Paraguay';\n  if(p.startsWith('598')) return 'Uruguay';\n  if(p.startsWith('51'))  return 'Perú';\n  if(p.startsWith('52'))  return 'México';\n  if(p.startsWith('54'))  return 'Argentina';\n  if(p.startsWith('55'))  return 'Brasil';\n  if(p.startsWith('56'))  return 'Chile';\n  if(p.startsWith('57'))  return 'Colombia';\n  if(p.startsWith('58'))  return 'Venezuela';\n  if(p.startsWith('1809')||p.startsWith('1829')||p.startsWith('1849')) return 'Rep. Dominicana';\n  if(p.startsWith('1'))   return 'USA/Canadá';\n  if(p.startsWith('34'))  return 'España';\n  if(p.startsWith('351')) return 'Portugal';\n  if(p.startsWith('33'))  return 'Francia';\n  if(p.startsWith('44'))  return 'Reino Unido';\n  if(p.startsWith('49'))  return 'Alemania';\n  if(p.startsWith('39'))  return 'Italia';\n  return null;\n}\nconst d = $input.first().json;\nconst phone   = d.message?.contact?.phone_number || '';\nconst name    = [d.message?.contact?.first_name, d.message?.contact?.last_name].filter(Boolean).join(' ');\nconst country = detectCountry(phone);\nreturn [{ json: { ...d, real_phone: phone.replace(/^\\+/,''), real_name: name || d.message?.from?.first_name || '', detected_country: country }}];\n"
+      },
+      "id": "ct_country",
+      "name": "TG Contacto — Detectar País",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        -224
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH upsert AS (\n  UPDATE suscriptores\n  SET\n    phone    = '{{ $json.real_phone }}',\n    name     = '{{ $json.real_name }}',\n    active   = true,\n    updated_at = NOW(),\n    country  = {{ $json.detected_country ? \"'\" + $json.detected_country + \"'\" : 'NULL' }},\n    telegram_username = '{{ $json.message.from.username || \"\" }}'\n  WHERE telegram_chat_id = {{ $json.message.from.id }}\n  RETURNING id\n)\nINSERT INTO suscriptores\n  (phone, name, platform, telegram_chat_id, telegram_username, active, demo_only, subscribed_at, created_at, updated_at, country)\nSELECT\n  '{{ $json.real_phone }}',\n  '{{ $json.real_name }}',\n  'telegram',\n  {{ $json.message.from.id }},\n  '{{ $json.message.from.username || \"\" }}',\n  true, true, NOW(), NOW(), NOW(),\n  {{ $json.detected_country ? \"'\" + $json.detected_country + \"'\" : 'NULL' }}\nWHERE NOT EXISTS (SELECT 1 FROM upsert);",
+        "options": {}
+      },
+      "id": "ct_db",
+      "name": "TG Contacto — Guardar en DB",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1104,
+        -224
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "lZiJmyplRgdvifzN",
+          "name": "PG Local RODAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.message.from.id }}",
+        "text": "✅ *¡Listo, {{ $json.real_name }}!*\n\nYa estás registrado en las alertas del *Mundial 2026* 🏆\n\nTe avisaremos en tiempo real:\n⚽ Goles\n🟢 Inicio del partido\n🏁 Resultado final\n📋 Resumen del día a las 10 PM\n\nEl primer partido de México es el *11 de junio vs Sudáfrica*. ¡Nos vemos ahí! 🇲🇽\n\n_Escribe STOP para cancelar._",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "ct_welcome",
+      "name": "TG Contacto — Bienvenida",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1392,
+        -224
+      ],
+      "webhookId": "d539f88e-4eef-4a58-903b-b2d85b376386",
+      "credentials": {
+        "telegramApi": {
+          "id": "yovv0GvglRF0YNLq",
+          "name": "Telegram Bot Mundial 2026"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "agent": "conversationalAgent",
+        "promptType": "define",
+        "text": "={{ $('Telegram — Mensajes entrantes').first().json.message.text || 'Hola' }}",
+        "options": {
+          "systemMessage": "Eres el asistente oficial de RODAI Sport para el Mundial FIFA 2026 (USA, Canadá y México, 11 jun – 19 jul 2026).\n\nDATOS DEL TORNEO:\n- 48 selecciones, 104 partidos, Grupos A–L\n- Fase grupos: 11–26 jun | Octavos: 29 jun–2 jul | Cuartos: 5–6 jul | Semis: 9–10 jul | Final: 19 jul, MetLife Stadium, NJ\n\nGRUPOS:\nA: México, Corea del Sur, Chequia, Sudáfrica\nB: Canadá, Bosnia, Qatar, Suiza\nC: Brasil, Marruecos, Haití, Escocia\nD: USA, Paraguay, Australia, Türkiye\nE: Alemania, Curazao, Costa de Marfil, Ecuador\nF: Países Bajos, Japón, Suecia, Túnez\nG: Bélgica, Egipto, Irán, Nueva Zelanda\nH: España, Cabo Verde, Arabia Saudita, Uruguay\nI: Francia, Senegal, Irak, Noruega\nJ: Argentina, Algeria, Austria, Jordania\nK: Portugal, DR Congo, Uzbekistán, Colombia\nL: Inglaterra, Croacia, Ghana, Panamá\n\nPARTIDOS MÉXICO (Grupo A):\n• 11 jun (Jue) 1 PM CDMX — México vs Sudáfrica — Estadio Azteca (inaugural)\n• 18 jun (Jue) 7 PM CDMX — México vs Corea del Sur — Estadio Akron, Guadalajara\n• 24 jun (Mié) 7 PM CDMX — Chequia vs México — Estadio Azteca\n\nSOBRE EQUIPOS Y JUGADORES:\nUsa tu conocimiento de entrenamiento sobre fútbol para responder cualquier pregunta de jugadores, dorsales, estadísticas o historial de CUALQUIER selección. Responde con confianza basándote en ese conocimiento.\n\nREGLAS:\n- Responde en español (salvo que el usuario escriba en otro idioma)\n- Máximo 120 palabras — NUNCA cortes la respuesta a la mitad\n- Usa emojis con moderación ⚽🏆\n- NUNCA menciones STOP ni instrucciones para cancelar\n- NUNCA termines con números sueltos ni caracteres extraños",
+          "maxIterations": 1
+        }
+      },
+      "id": "tg-ai-agent-wc26",
+      "name": "TG — AI Agent Mundial",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        1328,
+        456
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "options": {
+          "maxTokens": 400,
+          "temperature": 0.7
+        }
+      },
+      "id": "tg-lm-openai-wc26",
+      "name": "TG — OpenAI gpt-4o-mini",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1400,
+        680
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "DNniMXGQP8C9zu5z",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram — Mensajes entrantes').first().json.message.from.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "tg-send-ai-wc26",
+      "name": "TG — Enviar Respuesta IA",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1680,
+        456
+      ],
+      "webhookId": "4d31e846-683d-48b6-ba70-cd7e53cc71e3",
+      "credentials": {
+        "telegramApi": {
+          "id": "yovv0GvglRF0YNLq",
+          "name": "Telegram Bot Mundial 2026"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json._route }}",
+              "rightValue": "contact",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if_contact_tg",
+      "name": "IF Contact TG",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        656,
+        -76
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json._route }}",
+              "rightValue": "alta",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if_alta_tg",
+      "name": "IF Alta TG",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        880,
+        20
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json._route }}",
+              "rightValue": "stop",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if_stop_tg",
+      "name": "IF Stop TG",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1104,
+        212
+      ]
+    },
+    {
+      "id": "tg_check_phone",
+      "name": "TG — Verificar teléfono en DB",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1104,
+        456
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT phone FROM suscriptores WHERE telegram_chat_id = {{ $json.message.from.id }} LIMIT 1",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "lZiJmyplRgdvifzN",
+          "name": "PG Local RODAI"
+        }
+      }
+    },
+    {
+      "id": "tg_if_has_phone",
+      "name": "TG — IF tiene teléfono",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1328,
+        336
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.phone }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "isNotEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "tg_pedir_tel_existente",
+      "name": "TG — Pedir teléfono a existente",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1540,
+        240
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot8228856137:AAFZ2EdaTrv__wgZeowBXsLx-pocmsIUzgM/sendMessage",
+        "sendBody": true,
+        "specifyBody": "keypair",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "chat_id",
+              "value": "={{ $('Telegram — Mensajes entrantes').first().json.message.from.id }}"
+            },
+            {
+              "name": "text",
+              "value": "📱 Para enviarte alertas del *Mundial 2026* necesito tu número de teléfono.\n\nToca el botón de abajo para compartirlo 👇"
+            },
+            {
+              "name": "parse_mode",
+              "value": "Markdown"
+            },
+            {
+              "name": "reply_markup",
+              "value": "{\"keyboard\": [[{\"text\": \"\\ud83d\\udcf1 Compartir mi n\\u00famero\", \"request_contact\": true}], [{\"text\": \"\\u274c Ahora no\"}]], \"resize_keyboard\": true, \"one_time_keyboard\": true}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "yovv0GvglRF0YNLq",
+          "name": "Telegram Bot Mundial 2026"
+        }
+      },
+      "webhookId": "efc90bbd-2764-454d-aaab-2f58c05ce7df"
+    },
+    {
+      "id": "if_no_gracias",
+      "name": "TG — IF No gracias",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1340,
+        360
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ ($json.message?.text || '').toLowerCase() }}",
+              "rightValue": "no",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "tg_no_gracias",
+      "name": "TG — Confirmar solo Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1540,
+        360
+      ],
+      "parameters": {
+        "chatId": "={{ $('Telegram — Mensajes entrantes').first().json.message.from.id }}",
+        "text": "👍 Perfecto. Solo recibirás alertas por Telegram.\n\nEscribe *STOP* en cualquier momento para cancelar.",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "Markdown"
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "yovv0GvglRF0YNLq",
+          "name": "Telegram Bot Mundial 2026"
+        }
+      },
+      "webhookId": "c621cd51-dbd1-41b4-9bf1-1f614aa47817"
+    },
+    {
+      "id": "wh-kapso-raw",
+      "name": "WhatsApp — Kapso Evento Crudo",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        880,
+        -200
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "mundial-wa-raw",
+        "responseMode": "onReceived",
+        "responseData": "noData"
+      },
+      "webhookId": "673004a3-ef5b-4f77-9c92-d4cf9ad9a4b3"
+    },
+    {
+      "id": "wa-raw-parse",
+      "name": "WA Raw — Extraer Teléfono y Mensaje",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1080,
+        -200
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Kapso webhook payload — payload version v2\n// Structure: { message: { from, text: { body }, kapso: { content } }, conversation: { contact_name, phone_number } }\n\nconst body = $input.first().json.body || $input.first().json;\n\nlet phone = null;\nlet messageText = '';\nlet contactName = '';\n\n// Kapso v2 — real format (message.from + message.text.body)\nif (body.message && body.message.from) {\n  phone = String(body.message.from).replace('+', '');\n  messageText = (body.message.text?.body || body.message.kapso?.content || '').trim();\n  contactName = body.conversation?.contact_name || '';\n}\n\n// Kapso v2 alt — data.from format\nif (!phone && body.data && body.data.from) {\n  phone = String(body.data.from).replace('+', '');\n  messageText = (body.data.text || body.data.body || '').trim();\n}\n\n// Kapso v1\nif (!phone && body.from) {\n  phone = String(body.from).replace('+', '');\n  messageText = (body.text || body.message || '').trim();\n}\n\n// Meta webhook format\nif (!phone && body.entry) {\n  try {\n    const changes = body.entry[0].changes[0].value;\n    const msg = changes.messages?.[0];\n    phone = msg?.from || changes.contacts?.[0]?.wa_id;\n    messageText = msg?.text?.body || '';\n    contactName = changes.contacts?.[0]?.profile?.name || '';\n    if (phone) phone = String(phone).replace('+', '');\n  } catch(e) {}\n}\n\nif (!phone) {\n  throw new Error('No se pudo extraer el telefono del payload: ' + JSON.stringify(body).substring(0, 200));\n}\n\nconst msgUpper = messageText.toUpperCase();\nconst isAlta = msgUpper.includes('ALTA') || msgUpper.includes('SUSCRIB') || msgUpper.includes('INSCRIB');\nconst isStop = msgUpper === 'STOP' || msgUpper.includes('BAJA') || msgUpper.includes('CANCELAR') || msgUpper.includes('DESUSCRIB');\n\nreturn [{\n  json: {\n    phone,\n    name: contactName,\n    message_text: messageText,\n    action: isAlta ? 'ALTA' : (isStop ? 'STOP' : 'IGNORE'),\n    raw_body: body\n  }\n}];\n"
+      }
+    },
+    {
+      "id": "wa-raw-if-alta",
+      "name": "WA Raw — ¿Es ALTA?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1280,
+        -200
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "cond-alta",
+              "leftValue": "={{ $json.action }}",
+              "rightValue": "ALTA",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "wa-raw-if-stop",
+      "name": "WA Raw — ¿Es STOP?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1480,
+        -100
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "cond-stop",
+              "leftValue": "={{ $json.action }}",
+              "rightValue": "STOP",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "wa-raw-alta-db",
+      "name": "WA Raw — Guardar Suscriptor",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1680,
+        -200
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "lZiJmyplRgdvifzN",
+          "name": "PG Local RODAI"
+        }
+      },
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO suscriptores (phone, platform, active, demo_only, subscribed_at, created_at, updated_at, country)\nVALUES (\n  '{{ $json.phone }}',\n  'whatsapp',\n  true,\n  true,\n  NOW(), NOW(), NOW(),\n  CASE\n    WHEN '{{ $json.phone }}'::text LIKE '503%' THEN 'SV'\n    WHEN '{{ $json.phone }}'::text LIKE '502%' THEN 'GT'\n    WHEN '{{ $json.phone }}'::text LIKE '504%' THEN 'HN'\n    WHEN '{{ $json.phone }}'::text LIKE '505%' THEN 'NI'\n    WHEN '{{ $json.phone }}'::text LIKE '506%' THEN 'CR'\n    WHEN '{{ $json.phone }}'::text LIKE '507%' THEN 'PA'\n    WHEN '{{ $json.phone }}'::text LIKE '52%'  THEN 'MX'\n    WHEN '{{ $json.phone }}'::text LIKE '1%'   THEN 'US'\n    ELSE 'OTRO'\n  END\n)\nON CONFLICT (phone) DO UPDATE SET\n  active = true,\n  platform = 'whatsapp',\n  updated_at = NOW()\nRETURNING id, phone, platform, active",
+        "options": {}
+      }
+    },
+    {
+      "id": "wa-raw-stop-db",
+      "name": "WA Raw — Dar de Baja",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1680,
+        -50
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "lZiJmyplRgdvifzN",
+          "name": "PG Local RODAI"
+        }
+      },
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE suscriptores SET active = false, updated_at = NOW()\nWHERE phone = '{{ $json.phone }}' AND platform = 'whatsapp'\nRETURNING id, phone, active",
+        "options": {}
+      }
+    },
+    {
+      "id": "tg_typing",
+      "name": "TG — Typing...",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1108,
+        456
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot8228856137:AAFZ2EdaTrv__wgZeowBXsLx-pocmsIUzgM/sendChatAction",
+        "sendBody": true,
+        "specifyBody": "keypair",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "chat_id",
+              "value": "={{ $('Telegram — Mensajes entrantes').first().json.message.chat.id }}"
+            },
+            {
+              "name": "action",
+              "value": "typing"
+            }
+          ]
+        },
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "Telegram — Mensajes entrantes": {
+      "main": [
+        [
+          {
+            "node": "TG — Router",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram STOP — Dar de baja": {
+      "main": [
+        [
+          {
+            "node": "Telegram STOP — Confirmar baja",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp — ALTA/STOP desde Kapso": {
+      "main": [
+        [
+          {
+            "node": "WhatsApp — Detectar ALTA o STOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp — Detectar ALTA o STOP": {
+      "main": [
+        [
+          {
+            "node": "WA — Detectar País",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WhatsApp STOP — Dar de baja",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp ALTA — Guardar en DB": {
+      "main": [
+        [
+          {
+            "node": "WhatsApp ALTA — Responder OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp STOP — Dar de baja": {
+      "main": [
+        [
+          {
+            "node": "WhatsApp STOP — Responder OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stripe — Pago completado": {
+      "main": [
+        [
+          {
+            "node": "Stripe — Es checkout completado?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stripe — Es checkout completado?": {
+      "main": [
+        [
+          {
+            "node": "Stripe — Activar suscriptor pagado",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stripe — Responder 200",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stripe — Activar suscriptor pagado": {
+      "main": [
+        [
+          {
+            "node": "Stripe — Bienvenida WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stripe — Bienvenida WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Stripe — Responder 200",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Admin — Stats": {
+      "main": [
+        [
+          {
+            "node": "Admin — Verificar API Key",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Admin — Verificar API Key": {
+      "main": [
+        [
+          {
+            "node": "Admin — Consultar DB",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Admin — Responder 401",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Admin — Consultar DB": {
+      "main": [
+        [
+          {
+            "node": "Admin — Responder stats",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WA — Detectar País": {
+      "main": [
+        [
+          {
+            "node": "WhatsApp ALTA — Guardar en DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TG — Detectar País": {
+      "main": [
+        [
+          {
+            "node": "TG ALTA — Guardar en DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TG Contacto — Detectar País": {
+      "main": [
+        [
+          {
+            "node": "TG Contacto — Guardar en DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TG Contacto — Guardar en DB": {
+      "main": [
+        [
+          {
+            "node": "TG Contacto — Bienvenida",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TG — AI Agent Mundial": {
+      "main": [
+        [
+          {
+            "node": "TG — Enviar Respuesta IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TG — OpenAI gpt-4o-mini": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "TG — AI Agent Mundial",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TG — Router": {
+      "main": [
+        [
+          {
+            "node": "IF Contact TG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Contact TG": {
+      "main": [
+        [
+          {
+            "node": "TG Contacto — Detectar País",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "IF Alta TG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Alta TG": {
+      "main": [
+        [
+          {
+            "node": "TG ALTA — Guardar en DB",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "IF Stop TG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Stop TG": {
+      "main": [
+        [
+          {
+            "node": "Telegram STOP — Dar de baja",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "TG — Typing...",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TG ALTA — Guardar en DB": {
+      "main": [
+        [
+          {
+            "node": "TG ALTA — Confirmar registro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp — Kapso Evento Crudo": {
+      "main": [
+        [
+          {
+            "node": "WA Raw — Extraer Teléfono y Mensaje",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WA Raw — Extraer Teléfono y Mensaje": {
+      "main": [
+        [
+          {
+            "node": "WA Raw — ¿Es ALTA?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WA Raw — ¿Es ALTA?": {
+      "main": [
+        [
+          {
+            "node": "WA Raw — Guardar Suscriptor",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WA Raw — ¿Es STOP?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WA Raw — ¿Es STOP?": {
+      "main": [
+        [
+          {
+            "node": "WA Raw — Dar de Baja",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "WA Raw — Guardar Suscriptor": {
+      "main": [
+        []
+      ]
+    },
+    "WA Raw — Dar de Baja": {
+      "main": [
+        []
+      ]
+    },
+    "TG — Typing...": {
+      "main": [
+        [
+          {
+            "node": "TG — AI Agent Mundial",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "errorWorkflow": "EsaoKCXpD3TZMCje"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "ec256ed1-d452-4841-b10e-c777ca5d292e",
+  "activeVersionId": "ec256ed1-d452-4841-b10e-c777ca5d292e",
+  "versionCounter": 267,
+  "triggerCount": 5,
+  "shared": [
+    {
+      "updatedAt": "2026-06-09T01:38:17.230Z",
+      "createdAt": "2026-06-09T01:38:17.230Z",
+      "role": "workflow:owner",
+      "workflowId": "cI5WRRTgnqkInqq0",
+      "projectId": "g2T64qb4JyW1mWdT",
+      "project": {
+        "updatedAt": "2026-03-23T02:01:06.896Z",
+        "createdAt": "2026-03-23T01:54:43.748Z",
+        "id": "g2T64qb4JyW1mWdT",
+        "name": "Erick RODAI <admin@rodai.io>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "111326d0-ca57-4427-a4d0-5c6508637090"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-06-10T16:46:23.455Z",
+    "createdAt": "2026-06-10T16:46:23.455Z",
+    "versionId": "ec256ed1-d452-4841-b10e-c777ca5d292e",
+    "workflowId": "cI5WRRTgnqkInqq0",
+    "nodes": [
+      {
+        "parameters": {
+          "updates": [
+            "message"
+          ],
+          "additionalFields": {}
+        },
+        "id": "tg-trigger",
+        "name": "Telegram — Mensajes entrantes",
+        "type": "n8n-nodes-base.telegramTrigger",
+        "typeVersion": 1.1,
+        "position": [
+          208,
+          -76
+        ],
+        "webhookId": "mundial-telegram-trigger",
+        "credentials": {
+          "telegramApi": {
+            "id": "yovv0GvglRF0YNLq",
+            "name": "Telegram Bot Mundial 2026"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "mundial-logic",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "id": "wh-whatsapp",
+        "name": "WhatsApp — ALTA/STOP desde Kapso",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          208,
+          1104
+        ],
+        "webhookId": "e5f41f18-a8a7-44fc-b823-945c3075f1a5"
+      },
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "stripe-mundial",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "id": "wh-stripe",
+        "name": "Stripe — Pago completado",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          208,
+          1496
+        ],
+        "webhookId": "8c2e14b8-4234-4c7d-8e37-c901f1971096"
+      },
+      {
+        "parameters": {
+          "path": "mundial-admin",
+          "responseMode": "responseNode",
+          "options": {},
+          "httpMethod": "GET"
+        },
+        "id": "wh-admin",
+        "name": "Admin — Stats",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          208,
+          1816
+        ],
+        "webhookId": "f121ba0d-d184-47b8-9d94-41c9f771e0bc"
+      },
+      {
+        "parameters": {
+          "jsCode": "\nconst item = $input.first().json;\nconst text = (item.message?.text || '').toLowerCase().trim();\nconst hasContact = !!(item.message?.contact?.phone_number);\nlet route = 'pregunta';\nif (hasContact) route = 'contact';\nelse if (text.includes('alta')) route = 'alta';\nelse if (text.includes('stop')) route = 'stop';\nreturn [{ json: { ...item, _route: route } }];\n"
+        },
+        "id": "tg-parse",
+        "name": "TG — Router",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          432,
+          -76
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "INSERT INTO suscriptores\n  (name, platform, telegram_chat_id, telegram_username,\n   active, demo_only, subscribed_at, created_at, updated_at)\nVALUES (\n  '{{ $json.message.from.first_name || \"\" }}',\n  'telegram',\n  {{ $json.message.from.id }},\n  '{{ $json.message.from.username || \"\" }}',\n  true, true, NOW(), NOW(), NOW()\n)\nON CONFLICT (telegram_chat_id) DO UPDATE SET\n  active            = true,\n  name              = EXCLUDED.name,\n  telegram_username = EXCLUDED.telegram_username,\n  updated_at        = NOW()\nRETURNING telegram_chat_id, name;",
+          "options": {}
+        },
+        "id": "tg-alta-db",
+        "name": "TG ALTA — Guardar en DB",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.5,
+        "position": [
+          1104,
+          -32
+        ],
+        "webhookId": "8adaa991-b48a-4094-94f6-aeadc22aaae3",
+        "credentials": {
+          "postgres": {
+            "id": "lZiJmyplRgdvifzN",
+            "name": "PG Local RODAI"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "chatId": "={{ $json.telegram_chat_id }}",
+          "text": "✅ *¡Listo, {{ $json.name }}!*\n\nYa estás suscrito a las alertas del *Mundial 2026* 🏆\n\nRecibirás:\n⚽ Goles en tiempo real\n🟢 Inicio del partido\n📋 Alineaciones\n🏁 Resultado final\n📊 Resumen del día\n\nEl primer partido de México es el *11 de junio vs Sudáfrica*. ¡Nos vemos ahí! 🇲🇽\n\n_Escribe STOP para cancelar en cualquier momento._",
+          "additionalFields": {
+            "appendAttribution": false,
+            "parse_mode": "Markdown"
+          }
+        },
+        "id": "tg-alta-msg",
+        "name": "TG ALTA — Confirmar registro",
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          208,
+          784
+        ],
+        "webhookId": "b2090d37-c9fc-4ab4-9071-703d140f98e5",
+        "credentials": {
+          "telegramApi": {
+            "id": "yovv0GvglRF0YNLq",
+            "name": "Telegram Bot Mundial 2026"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "UPDATE suscriptores SET active = false, updated_at = NOW() WHERE telegram_chat_id = {{ $json.message.from.id }};",
+          "options": {}
+        },
+        "id": "tg-stop-db",
+        "name": "Telegram STOP — Dar de baja",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.5,
+        "position": [
+          1392,
+          116
+        ],
+        "credentials": {
+          "postgres": {
+            "id": "lZiJmyplRgdvifzN",
+            "name": "PG Local RODAI"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "chatId": "={{ $('Telegram — Mensajes entrantes').item.json.message.chat.id }}",
+          "text": "✅ Te dimos de baja de las alertas del Mundial. Puedes volver cuando quieras enviando ALTA. ¡Hasta pronto!",
+          "additionalFields": {
+            "appendAttribution": false
+          }
+        },
+        "id": "tg-stop-msg",
+        "name": "Telegram STOP — Confirmar baja",
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          1680,
+          116
+        ],
+        "webhookId": "196eb699-273d-42ce-9b61-67a1ac41ce03",
+        "credentials": {
+          "telegramApi": {
+            "id": "yovv0GvglRF0YNLq",
+            "name": "Telegram Bot Mundial 2026"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "rules": {
+            "values": [
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": false,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 1
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.body.message_text }}",
+                      "rightValue": "ALTA",
+                      "operator": {
+                        "type": "string",
+                        "operation": "contains"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "alta"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": false,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 1
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.body.message_text }}",
+                      "rightValue": "STOP",
+                      "operator": {
+                        "type": "string",
+                        "operation": "contains"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "stop"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "wa-parse",
+        "name": "WhatsApp — Detectar ALTA o STOP",
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.2,
+        "position": [
+          432,
+          1104
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "INSERT INTO suscriptores (phone, platform, active, demo_only, subscribed_at, created_at, updated_at, country)\nVALUES ('{{ $json.body.phone }}', 'whatsapp', true, true, NOW(), NOW(), NOW(), {{ $json.detected_country ? \"'\" + $json.detected_country + \"'\" : 'NULL' }})\nON CONFLICT (phone) DO UPDATE SET active = true, platform = 'whatsapp', updated_at = NOW(), country = COALESCE(EXCLUDED.country, suscriptores.country);",
+          "options": {}
+        },
+        "id": "wa-alta-db",
+        "name": "WhatsApp ALTA — Guardar en DB",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.5,
+        "position": [
+          880,
+          1008
+        ],
+        "credentials": {
+          "postgres": {
+            "id": "lZiJmyplRgdvifzN",
+            "name": "PG Local RODAI"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "{ \"status\": \"subscribed\" }",
+          "options": {}
+        },
+        "id": "wa-alta-respond",
+        "name": "WhatsApp ALTA — Responder OK",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1,
+        "position": [
+          1104,
+          1008
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "UPDATE suscriptores SET active = false, updated_at = NOW() WHERE phone = '{{ $json.body.phone }}';",
+          "options": {}
+        },
+        "id": "wa-stop-db",
+        "name": "WhatsApp STOP — Dar de baja",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.5,
+        "position": [
+          656,
+          1200
+        ],
+        "credentials": {
+          "postgres": {
+            "id": "lZiJmyplRgdvifzN",
+            "name": "PG Local RODAI"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "{ \"status\": \"unsubscribed\" }",
+          "options": {}
+        },
+        "id": "wa-stop-respond",
+        "name": "WhatsApp STOP — Responder OK",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1,
+        "position": [
+          880,
+          1200
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 1
+            },
+            "conditions": [
+              {
+                "id": "c1",
+                "leftValue": "={{ $json.body.type }}",
+                "rightValue": "checkout.session.completed",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "stripe-check",
+        "name": "Stripe — Es checkout completado?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          432,
+          1496
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "INSERT INTO suscriptores (phone, email, stripe_session_id, paid, paid_at, active, demo_only, platform, subscribed_at, created_at, updated_at)\nVALUES (\n  COALESCE(NULLIF('{{ $json.body.data.object.customer_details.phone }}', ''), 'stripe_{{ $json.body.data.object.id }}'),\n  '{{ $json.body.data.object.customer_details.email }}',\n  '{{ $json.body.data.object.id }}',\n  true, NOW(), true, false, 'whatsapp', NOW(), NOW(), NOW()\n)\nON CONFLICT (phone) DO UPDATE SET\n  paid = true, paid_at = NOW(), active = true, demo_only = false,\n  email = EXCLUDED.email, stripe_session_id = EXCLUDED.stripe_session_id,\n  updated_at = NOW();\nSELECT phone, email, paid FROM suscriptores WHERE stripe_session_id = '{{ $json.body.data.object.id }}';",
+          "options": {}
+        },
+        "id": "stripe-db",
+        "name": "Stripe — Activar suscriptor pagado",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.5,
+        "position": [
+          656,
+          1424
+        ],
+        "credentials": {
+          "postgres": {
+            "id": "lZiJmyplRgdvifzN",
+            "name": "PG Local RODAI"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.kapso.ai/meta/whatsapp/v24.0/597907523413541/messages",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "Bearer b65754e64505dc1de08e536ba6232c79c0f6f10a0b9c4fe6933be70daa3aa213"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={ \"messaging_product\": \"whatsapp\", \"to\": \"{{ $('Stripe — Activar suscriptor pagado').item.json.phone }}\", \"type\": \"text\", \"text\": { \"body\": \"🏆 ¡Pago confirmado! Bienvenido a Alertas Mundial 2026.\\n\\nRecibirás alertas de todos los partidos hasta el 19 de julio.\\n\\nMéxico juega el 11 jun vs Sudáfrica. ¡Vamos México! 🇲🇽\\n\\nResponde STOP para cancelar.\" } }",
+          "options": {}
+        },
+        "id": "stripe-welcome-wa",
+        "name": "Stripe — Bienvenida WhatsApp",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          880,
+          1424
+        ]
+      },
+      {
+        "parameters": {
+          "respondWith": "text",
+          "responseBody": "ok",
+          "options": {}
+        },
+        "id": "stripe-respond",
+        "name": "Stripe — Responder 200",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1,
+        "position": [
+          1104,
+          1496
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 1
+            },
+            "conditions": [
+              {
+                "id": "c1",
+                "leftValue": "={{ $('Admin — Stats').first().json['headers']['x-admin-key'] }}",
+                "rightValue": "mundial-admin-2026-rodai",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "admin-check-key",
+        "name": "Admin — Verificar API Key",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          432,
+          1816
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "SELECT\n  (SELECT COUNT(*) FROM suscriptores WHERE active = true)::text  AS activos,\n  (SELECT COUNT(*) FROM suscriptores WHERE active = false)::text AS bajas,\n  (SELECT COUNT(*) FROM suscriptores)::text                      AS total,\n  (SELECT COUNT(*) FROM suscriptores WHERE paid = true)::text    AS pagados,\n  (SELECT COUNT(*) FROM suscriptores WHERE platform = 'telegram')::text AS telegram,\n  (SELECT COUNT(*) FROM suscriptores WHERE platform = 'whatsapp')::text AS whatsapp,\n  (\n    SELECT json_agg(json_build_object(\n      'id', id, 'name', name, 'phone', phone,\n      'platform', platform, 'country', country,\n      'active', active, 'paid', paid, 'demo_only', demo_only,\n      'subscribed_at', subscribed_at\n    ) ORDER BY id DESC)\n    FROM suscriptores\n  ) AS suscriptores",
+          "options": {}
+        },
+        "id": "admin-query",
+        "name": "Admin — Consultar DB",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.5,
+        "position": [
+          656,
+          1720
+        ],
+        "credentials": {
+          "postgres": {
+            "id": "lZiJmyplRgdvifzN",
+            "name": "PG Local RODAI"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "respondWith": "allIncomingItems",
+          "options": {
+            "responseHeaders": {
+              "entries": [
+                {
+                  "name": "Cache-Control",
+                  "value": "no-store, no-cache, must-revalidate, proxy-revalidate"
+                },
+                {
+                  "name": "Pragma",
+                  "value": "no-cache"
+                },
+                {
+                  "name": "Expires",
+                  "value": "0"
+                }
+              ]
+            }
+          }
+        },
+        "id": "admin-respond-ok",
+        "name": "Admin — Responder stats",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1,
+        "position": [
+          880,
+          1720
+        ]
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "{ \"error\": \"Unauthorized\" }",
+          "options": {
+            "responseCode": 401
+          }
+        },
+        "id": "admin-respond-401",
+        "name": "Admin — Responder 401",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1,
+        "position": [
+          656,
+          1912
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "\nfunction detectCountry(phone) {\n  const p = String(phone || '').replace(/\\D/g, '');\n  if (p.startsWith('502')) return 'Guatemala';\n  if (p.startsWith('503')) return 'El Salvador';\n  if (p.startsWith('504')) return 'Honduras';\n  if (p.startsWith('505')) return 'Nicaragua';\n  if (p.startsWith('506')) return 'Costa Rica';\n  if (p.startsWith('507')) return 'Panamá';\n  if (p.startsWith('509')) return 'Haití';\n  if (p.startsWith('591')) return 'Bolivia';\n  if (p.startsWith('593')) return 'Ecuador';\n  if (p.startsWith('595')) return 'Paraguay';\n  if (p.startsWith('598')) return 'Uruguay';\n  if (p.startsWith('51')) return 'Perú';\n  if (p.startsWith('52')) return 'México';\n  if (p.startsWith('53')) return 'Cuba';\n  if (p.startsWith('54')) return 'Argentina';\n  if (p.startsWith('55')) return 'Brasil';\n  if (p.startsWith('56')) return 'Chile';\n  if (p.startsWith('57')) return 'Colombia';\n  if (p.startsWith('58')) return 'Venezuela';\n  if (p.startsWith('1809') || p.startsWith('1829') || p.startsWith('1849')) return 'Rep. Dominicana';\n  if (p.startsWith('1787') || p.startsWith('1939')) return 'Puerto Rico';\n  if (p.startsWith('1')) return 'USA/Canadá';\n  if (p.startsWith('34')) return 'España';\n  if (p.startsWith('351')) return 'Portugal';\n  if (p.startsWith('33')) return 'Francia';\n  if (p.startsWith('44')) return 'Reino Unido';\n  if (p.startsWith('49')) return 'Alemania';\n  if (p.startsWith('39')) return 'Italia';\n  if (p.startsWith('31')) return 'Países Bajos';\n  if (p.startsWith('32')) return 'Bélgica';\n  if (p.startsWith('81')) return 'Japón';\n  if (p.startsWith('82')) return 'Corea del Sur';\n  if (p.startsWith('86')) return 'China';\n  if (p.startsWith('966')) return 'Arabia Saudita';\n  if (p.startsWith('971')) return 'Emiratos Árabes';\n  if (p.startsWith('52')) return 'México';\n  return null;\n}\n\nconst d = $input.first().json;\nconst phone = d.body?.phone || '';\nconst country = detectCountry(phone);\nreturn [{ json: { ...d, detected_country: country } }];\n"
+        },
+        "id": "wa_country",
+        "name": "WA — Detectar País",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          656,
+          1008
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "\nfunction langToCountry(lang) {\n  const map = {\n    'es': 'Latinoamérica/España', 'es-mx': 'México', 'es-ar': 'Argentina',\n    'es-co': 'Colombia', 'es-es': 'España', 'es-cl': 'Chile',\n    'en': 'USA/UK', 'en-us': 'USA', 'en-gb': 'Reino Unido',\n    'pt': 'Brasil/Portugal', 'pt-br': 'Brasil', 'pt-pt': 'Portugal',\n    'fr': 'Francia', 'de': 'Alemania', 'it': 'Italia',\n    'ja': 'Japón', 'ko': 'Corea del Sur', 'zh': 'China',\n    'ar': 'Árabe', 'ru': 'Rusia', 'tr': 'Turquía',\n    'nl': 'Países Bajos', 'pl': 'Polonia', 'uk': 'Ucrania'\n  };\n  return map[(lang||'').toLowerCase()] || null;\n}\n\nconst d = $input.first().json;\nconst lang = d.message?.from?.language_code || '';\nconst country = langToCountry(lang);\nreturn [{ json: { ...d, detected_country: country } }];\n"
+        },
+        "id": "tg_country",
+        "name": "TG — Detectar País",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          880,
+          260
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "\nfunction detectCountry(phone) {\n  const p = String(phone||'').replace(/\\D/g,'');\n  if(p.startsWith('502')) return 'Guatemala';\n  if(p.startsWith('503')) return 'El Salvador';\n  if(p.startsWith('504')) return 'Honduras';\n  if(p.startsWith('505')) return 'Nicaragua';\n  if(p.startsWith('506')) return 'Costa Rica';\n  if(p.startsWith('507')) return 'Panamá';\n  if(p.startsWith('591')) return 'Bolivia';\n  if(p.startsWith('593')) return 'Ecuador';\n  if(p.startsWith('595')) return 'Paraguay';\n  if(p.startsWith('598')) return 'Uruguay';\n  if(p.startsWith('51'))  return 'Perú';\n  if(p.startsWith('52'))  return 'México';\n  if(p.startsWith('54'))  return 'Argentina';\n  if(p.startsWith('55'))  return 'Brasil';\n  if(p.startsWith('56'))  return 'Chile';\n  if(p.startsWith('57'))  return 'Colombia';\n  if(p.startsWith('58'))  return 'Venezuela';\n  if(p.startsWith('1809')||p.startsWith('1829')||p.startsWith('1849')) return 'Rep. Dominicana';\n  if(p.startsWith('1'))   return 'USA/Canadá';\n  if(p.startsWith('34'))  return 'España';\n  if(p.startsWith('351')) return 'Portugal';\n  if(p.startsWith('33'))  return 'Francia';\n  if(p.startsWith('44'))  return 'Reino Unido';\n  if(p.startsWith('49'))  return 'Alemania';\n  if(p.startsWith('39'))  return 'Italia';\n  return null;\n}\nconst d = $input.first().json;\nconst phone   = d.message?.contact?.phone_number || '';\nconst name    = [d.message?.contact?.first_name, d.message?.contact?.last_name].filter(Boolean).join(' ');\nconst country = detectCountry(phone);\nreturn [{ json: { ...d, real_phone: phone.replace(/^\\+/,''), real_name: name || d.message?.from?.first_name || '', detected_country: country }}];\n"
+        },
+        "id": "ct_country",
+        "name": "TG Contacto — Detectar País",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          880,
+          -224
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "WITH upsert AS (\n  UPDATE suscriptores\n  SET\n    phone    = '{{ $json.real_phone }}',\n    name     = '{{ $json.real_name }}',\n    active   = true,\n    updated_at = NOW(),\n    country  = {{ $json.detected_country ? \"'\" + $json.detected_country + \"'\" : 'NULL' }},\n    telegram_username = '{{ $json.message.from.username || \"\" }}'\n  WHERE telegram_chat_id = {{ $json.message.from.id }}\n  RETURNING id\n)\nINSERT INTO suscriptores\n  (phone, name, platform, telegram_chat_id, telegram_username, active, demo_only, subscribed_at, created_at, updated_at, country)\nSELECT\n  '{{ $json.real_phone }}',\n  '{{ $json.real_name }}',\n  'telegram',\n  {{ $json.message.from.id }},\n  '{{ $json.message.from.username || \"\" }}',\n  true, true, NOW(), NOW(), NOW(),\n  {{ $json.detected_country ? \"'\" + $json.detected_country + \"'\" : 'NULL' }}\nWHERE NOT EXISTS (SELECT 1 FROM upsert);",
+          "options": {}
+        },
+        "id": "ct_db",
+        "name": "TG Contacto — Guardar en DB",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.5,
+        "position": [
+          1104,
+          -224
+        ],
+        "credentials": {
+          "postgres": {
+            "id": "lZiJmyplRgdvifzN",
+            "name": "PG Local RODAI"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "chatId": "={{ $json.message.from.id }}",
+          "text": "✅ *¡Listo, {{ $json.real_name }}!*\n\nYa estás registrado en las alertas del *Mundial 2026* 🏆\n\nTe avisaremos en tiempo real:\n⚽ Goles\n🟢 Inicio del partido\n🏁 Resultado final\n📋 Resumen del día a las 10 PM\n\nEl primer partido de México es el *11 de junio vs Sudáfrica*. ¡Nos vemos ahí! 🇲🇽\n\n_Escribe STOP para cancelar._",
+          "additionalFields": {
+            "appendAttribution": false,
+            "parse_mode": "Markdown"
+          }
+        },
+        "id": "ct_welcome",
+        "name": "TG Contacto — Bienvenida",
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          1392,
+          -224
+        ],
+        "webhookId": "d539f88e-4eef-4a58-903b-b2d85b376386",
+        "credentials": {
+          "telegramApi": {
+            "id": "yovv0GvglRF0YNLq",
+            "name": "Telegram Bot Mundial 2026"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "agent": "conversationalAgent",
+          "promptType": "define",
+          "text": "={{ $('Telegram — Mensajes entrantes').first().json.message.text || 'Hola' }}",
+          "options": {
+            "systemMessage": "Eres el asistente oficial de RODAI Sport para el Mundial FIFA 2026 (USA, Canadá y México, 11 jun – 19 jul 2026).\n\nDATOS DEL TORNEO:\n- 48 selecciones, 104 partidos, Grupos A–L\n- Fase grupos: 11–26 jun | Octavos: 29 jun–2 jul | Cuartos: 5–6 jul | Semis: 9–10 jul | Final: 19 jul, MetLife Stadium, NJ\n\nGRUPOS:\nA: México, Corea del Sur, Chequia, Sudáfrica\nB: Canadá, Bosnia, Qatar, Suiza\nC: Brasil, Marruecos, Haití, Escocia\nD: USA, Paraguay, Australia, Türkiye\nE: Alemania, Curazao, Costa de Marfil, Ecuador\nF: Países Bajos, Japón, Suecia, Túnez\nG: Bélgica, Egipto, Irán, Nueva Zelanda\nH: España, Cabo Verde, Arabia Saudita, Uruguay\nI: Francia, Senegal, Irak, Noruega\nJ: Argentina, Algeria, Austria, Jordania\nK: Portugal, DR Congo, Uzbekistán, Colombia\nL: Inglaterra, Croacia, Ghana, Panamá\n\nPARTIDOS MÉXICO (Grupo A):\n• 11 jun (Jue) 1 PM CDMX — México vs Sudáfrica — Estadio Azteca (inaugural)\n• 18 jun (Jue) 7 PM CDMX — México vs Corea del Sur — Estadio Akron, Guadalajara\n• 24 jun (Mié) 7 PM CDMX — Chequia vs México — Estadio Azteca\n\nSOBRE EQUIPOS Y JUGADORES:\nUsa tu conocimiento de entrenamiento sobre fútbol para responder cualquier pregunta de jugadores, dorsales, estadísticas o historial de CUALQUIER selección. Responde con confianza basándote en ese conocimiento.\n\nREGLAS:\n- Responde en español (salvo que el usuario escriba en otro idioma)\n- Máximo 120 palabras — NUNCA cortes la respuesta a la mitad\n- Usa emojis con moderación ⚽🏆\n- NUNCA menciones STOP ni instrucciones para cancelar\n- NUNCA termines con números sueltos ni caracteres extraños",
+            "maxIterations": 1
+          }
+        },
+        "id": "tg-ai-agent-wc26",
+        "name": "TG — AI Agent Mundial",
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 1.7,
+        "position": [
+          1328,
+          456
+        ]
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "value": "gpt-4o",
+            "mode": "list",
+            "cachedResultName": "gpt-4o"
+          },
+          "options": {
+            "maxTokens": 400,
+            "temperature": 0.7
+          }
+        },
+        "id": "tg-lm-openai-wc26",
+        "name": "TG — OpenAI gpt-4o-mini",
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.2,
+        "position": [
+          1400,
+          680
+        ],
+        "credentials": {
+          "openAiApi": {
+            "id": "DNniMXGQP8C9zu5z",
+            "name": "OpenAi account 2"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "chatId": "={{ $('Telegram — Mensajes entrantes').first().json.message.from.id }}",
+          "text": "={{ $json.output }}",
+          "additionalFields": {
+            "appendAttribution": false,
+            "parse_mode": "Markdown"
+          }
+        },
+        "id": "tg-send-ai-wc26",
+        "name": "TG — Enviar Respuesta IA",
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          1680,
+          456
+        ],
+        "webhookId": "4d31e846-683d-48b6-ba70-cd7e53cc71e3",
+        "credentials": {
+          "telegramApi": {
+            "id": "yovv0GvglRF0YNLq",
+            "name": "Telegram Bot Mundial 2026"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": false,
+              "leftValue": "",
+              "typeValidation": "loose",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json._route }}",
+                "rightValue": "contact",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "if_contact_tg",
+        "name": "IF Contact TG",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          656,
+          -76
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": false,
+              "leftValue": "",
+              "typeValidation": "loose",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json._route }}",
+                "rightValue": "alta",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "if_alta_tg",
+        "name": "IF Alta TG",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          880,
+          20
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": false,
+              "leftValue": "",
+              "typeValidation": "loose",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json._route }}",
+                "rightValue": "stop",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "if_stop_tg",
+        "name": "IF Stop TG",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          1104,
+          212
+        ]
+      },
+      {
+        "id": "tg_check_phone",
+        "name": "TG — Verificar teléfono en DB",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.5,
+        "position": [
+          1104,
+          456
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "SELECT phone FROM suscriptores WHERE telegram_chat_id = {{ $json.message.from.id }} LIMIT 1",
+          "options": {}
+        },
+        "credentials": {
+          "postgres": {
+            "id": "lZiJmyplRgdvifzN",
+            "name": "PG Local RODAI"
+          }
+        }
+      },
+      {
+        "id": "tg_if_has_phone",
+        "name": "TG — IF tiene teléfono",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          1328,
+          336
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": false,
+              "leftValue": "",
+              "typeValidation": "loose",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.phone }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "isNotEmpty"
+                }
+              }
+            ],
+            "combinator": "and"
+          }
+        }
+      },
+      {
+        "id": "tg_pedir_tel_existente",
+        "name": "TG — Pedir teléfono a existente",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1540,
+          240
+        ],
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.telegram.org/bot8228856137:AAFZ2EdaTrv__wgZeowBXsLx-pocmsIUzgM/sendMessage",
+          "sendBody": true,
+          "specifyBody": "keypair",
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "chat_id",
+                "value": "={{ $('Telegram — Mensajes entrantes').first().json.message.from.id }}"
+              },
+              {
+                "name": "text",
+                "value": "📱 Para enviarte alertas del *Mundial 2026* necesito tu número de teléfono.\n\nToca el botón de abajo para compartirlo 👇"
+              },
+              {
+                "name": "parse_mode",
+                "value": "Markdown"
+              },
+              {
+                "name": "reply_markup",
+                "value": "{\"keyboard\": [[{\"text\": \"\\ud83d\\udcf1 Compartir mi n\\u00famero\", \"request_contact\": true}], [{\"text\": \"\\u274c Ahora no\"}]], \"resize_keyboard\": true, \"one_time_keyboard\": true}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "credentials": {
+          "telegramApi": {
+            "id": "yovv0GvglRF0YNLq",
+            "name": "Telegram Bot Mundial 2026"
+          }
+        },
+        "webhookId": "efc90bbd-2764-454d-aaab-2f58c05ce7df"
+      },
+      {
+        "id": "if_no_gracias",
+        "name": "TG — IF No gracias",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          1340,
+          360
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": false,
+              "leftValue": "",
+              "typeValidation": "loose",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ ($json.message?.text || '').toLowerCase() }}",
+                "rightValue": "no",
+                "operator": {
+                  "type": "string",
+                  "operation": "contains"
+                }
+              }
+            ],
+            "combinator": "and"
+          }
+        }
+      },
+      {
+        "id": "tg_no_gracias",
+        "name": "TG — Confirmar solo Telegram",
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          1540,
+          360
+        ],
+        "parameters": {
+          "chatId": "={{ $('Telegram — Mensajes entrantes').first().json.message.from.id }}",
+          "text": "👍 Perfecto. Solo recibirás alertas por Telegram.\n\nEscribe *STOP* en cualquier momento para cancelar.",
+          "additionalFields": {
+            "appendAttribution": false,
+            "parse_mode": "Markdown"
+          }
+        },
+        "credentials": {
+          "telegramApi": {
+            "id": "yovv0GvglRF0YNLq",
+            "name": "Telegram Bot Mundial 2026"
+          }
+        },
+        "webhookId": "c621cd51-dbd1-41b4-9bf1-1f614aa47817"
+      },
+      {
+        "id": "wh-kapso-raw",
+        "name": "WhatsApp — Kapso Evento Crudo",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          880,
+          -200
+        ],
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "mundial-wa-raw",
+          "responseMode": "onReceived",
+          "responseData": "noData"
+        },
+        "webhookId": "673004a3-ef5b-4f77-9c92-d4cf9ad9a4b3"
+      },
+      {
+        "id": "wa-raw-parse",
+        "name": "WA Raw — Extraer Teléfono y Mensaje",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1080,
+          -200
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "// Kapso webhook payload — payload version v2\n// Structure: { message: { from, text: { body }, kapso: { content } }, conversation: { contact_name, phone_number } }\n\nconst body = $input.first().json.body || $input.first().json;\n\nlet phone = null;\nlet messageText = '';\nlet contactName = '';\n\n// Kapso v2 — real format (message.from + message.text.body)\nif (body.message && body.message.from) {\n  phone = String(body.message.from).replace('+', '');\n  messageText = (body.message.text?.body || body.message.kapso?.content || '').trim();\n  contactName = body.conversation?.contact_name || '';\n}\n\n// Kapso v2 alt — data.from format\nif (!phone && body.data && body.data.from) {\n  phone = String(body.data.from).replace('+', '');\n  messageText = (body.data.text || body.data.body || '').trim();\n}\n\n// Kapso v1\nif (!phone && body.from) {\n  phone = String(body.from).replace('+', '');\n  messageText = (body.text || body.message || '').trim();\n}\n\n// Meta webhook format\nif (!phone && body.entry) {\n  try {\n    const changes = body.entry[0].changes[0].value;\n    const msg = changes.messages?.[0];\n    phone = msg?.from || changes.contacts?.[0]?.wa_id;\n    messageText = msg?.text?.body || '';\n    contactName = changes.contacts?.[0]?.profile?.name || '';\n    if (phone) phone = String(phone).replace('+', '');\n  } catch(e) {}\n}\n\nif (!phone) {\n  throw new Error('No se pudo extraer el telefono del payload: ' + JSON.stringify(body).substring(0, 200));\n}\n\nconst msgUpper = messageText.toUpperCase();\nconst isAlta = msgUpper.includes('ALTA') || msgUpper.includes('SUSCRIB') || msgUpper.includes('INSCRIB');\nconst isStop = msgUpper === 'STOP' || msgUpper.includes('BAJA') || msgUpper.includes('CANCELAR') || msgUpper.includes('DESUSCRIB');\n\nreturn [{\n  json: {\n    phone,\n    name: contactName,\n    message_text: messageText,\n    action: isAlta ? 'ALTA' : (isStop ? 'STOP' : 'IGNORE'),\n    raw_body: body\n  }\n}];\n"
+        }
+      },
+      {
+        "id": "wa-raw-if-alta",
+        "name": "WA Raw — ¿Es ALTA?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          1280,
+          -200
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": false,
+              "leftValue": "",
+              "typeValidation": "strict"
+            },
+            "conditions": [
+              {
+                "id": "cond-alta",
+                "leftValue": "={{ $json.action }}",
+                "rightValue": "ALTA",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "wa-raw-if-stop",
+        "name": "WA Raw — ¿Es STOP?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          1480,
+          -100
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": false,
+              "leftValue": "",
+              "typeValidation": "strict"
+            },
+            "conditions": [
+              {
+                "id": "cond-stop",
+                "leftValue": "={{ $json.action }}",
+                "rightValue": "STOP",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "wa-raw-alta-db",
+        "name": "WA Raw — Guardar Suscriptor",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.5,
+        "position": [
+          1680,
+          -200
+        ],
+        "credentials": {
+          "postgres": {
+            "id": "lZiJmyplRgdvifzN",
+            "name": "PG Local RODAI"
+          }
+        },
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "INSERT INTO suscriptores (phone, platform, active, demo_only, subscribed_at, created_at, updated_at, country)\nVALUES (\n  '{{ $json.phone }}',\n  'whatsapp',\n  true,\n  true,\n  NOW(), NOW(), NOW(),\n  CASE\n    WHEN '{{ $json.phone }}'::text LIKE '503%' THEN 'SV'\n    WHEN '{{ $json.phone }}'::text LIKE '502%' THEN 'GT'\n    WHEN '{{ $json.phone }}'::text LIKE '504%' THEN 'HN'\n    WHEN '{{ $json.phone }}'::text LIKE '505%' THEN 'NI'\n    WHEN '{{ $json.phone }}'::text LIKE '506%' THEN 'CR'\n    WHEN '{{ $json.phone }}'::text LIKE '507%' THEN 'PA'\n    WHEN '{{ $json.phone }}'::text LIKE '52%'  THEN 'MX'\n    WHEN '{{ $json.phone }}'::text LIKE '1%'   THEN 'US'\n    ELSE 'OTRO'\n  END\n)\nON CONFLICT (phone) DO UPDATE SET\n  active = true,\n  platform = 'whatsapp',\n  updated_at = NOW()\nRETURNING id, phone, platform, active",
+          "options": {}
+        }
+      },
+      {
+        "id": "wa-raw-stop-db",
+        "name": "WA Raw — Dar de Baja",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.5,
+        "position": [
+          1680,
+          -50
+        ],
+        "credentials": {
+          "postgres": {
+            "id": "lZiJmyplRgdvifzN",
+            "name": "PG Local RODAI"
+          }
+        },
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "UPDATE suscriptores SET active = false, updated_at = NOW()\nWHERE phone = '{{ $json.phone }}' AND platform = 'whatsapp'\nRETURNING id, phone, active",
+          "options": {}
+        }
+      },
+      {
+        "id": "tg_typing",
+        "name": "TG — Typing...",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1108,
+          456
+        ],
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.telegram.org/bot8228856137:AAFZ2EdaTrv__wgZeowBXsLx-pocmsIUzgM/sendChatAction",
+          "sendBody": true,
+          "specifyBody": "keypair",
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "chat_id",
+                "value": "={{ $('Telegram — Mensajes entrantes').first().json.message.chat.id }}"
+              },
+              {
+                "name": "action",
+                "value": "typing"
+              }
+            ]
+          },
+          "options": {}
+        }
+      }
+    ],
+    "connections": {
+      "Telegram — Mensajes entrantes": {
+        "main": [
+          [
+            {
+              "node": "TG — Router",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Telegram STOP — Dar de baja": {
+        "main": [
+          [
+            {
+              "node": "Telegram STOP — Confirmar baja",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "WhatsApp — ALTA/STOP desde Kapso": {
+        "main": [
+          [
+            {
+              "node": "WhatsApp — Detectar ALTA o STOP",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "WhatsApp — Detectar ALTA o STOP": {
+        "main": [
+          [
+            {
+              "node": "WA — Detectar País",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "WhatsApp STOP — Dar de baja",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "WhatsApp ALTA — Guardar en DB": {
+        "main": [
+          [
+            {
+              "node": "WhatsApp ALTA — Responder OK",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "WhatsApp STOP — Dar de baja": {
+        "main": [
+          [
+            {
+              "node": "WhatsApp STOP — Responder OK",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Stripe — Pago completado": {
+        "main": [
+          [
+            {
+              "node": "Stripe — Es checkout completado?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Stripe — Es checkout completado?": {
+        "main": [
+          [
+            {
+              "node": "Stripe — Activar suscriptor pagado",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Stripe — Responder 200",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Stripe — Activar suscriptor pagado": {
+        "main": [
+          [
+            {
+              "node": "Stripe — Bienvenida WhatsApp",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Stripe — Bienvenida WhatsApp": {
+        "main": [
+          [
+            {
+              "node": "Stripe — Responder 200",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Admin — Stats": {
+        "main": [
+          [
+            {
+              "node": "Admin — Verificar API Key",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Admin — Verificar API Key": {
+        "main": [
+          [
+            {
+              "node": "Admin — Consultar DB",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Admin — Responder 401",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Admin — Consultar DB": {
+        "main": [
+          [
+            {
+              "node": "Admin — Responder stats",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "WA — Detectar País": {
+        "main": [
+          [
+            {
+              "node": "WhatsApp ALTA — Guardar en DB",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "TG — Detectar País": {
+        "main": [
+          [
+            {
+              "node": "TG ALTA — Guardar en DB",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "TG Contacto — Detectar País": {
+        "main": [
+          [
+            {
+              "node": "TG Contacto — Guardar en DB",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "TG Contacto — Guardar en DB": {
+        "main": [
+          [
+            {
+              "node": "TG Contacto — Bienvenida",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "TG — AI Agent Mundial": {
+        "main": [
+          [
+            {
+              "node": "TG — Enviar Respuesta IA",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "TG — OpenAI gpt-4o-mini": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "TG — AI Agent Mundial",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "TG — Router": {
+        "main": [
+          [
+            {
+              "node": "IF Contact TG",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "IF Contact TG": {
+        "main": [
+          [
+            {
+              "node": "TG Contacto — Detectar País",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "IF Alta TG",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "IF Alta TG": {
+        "main": [
+          [
+            {
+              "node": "TG ALTA — Guardar en DB",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "IF Stop TG",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "IF Stop TG": {
+        "main": [
+          [
+            {
+              "node": "Telegram STOP — Dar de baja",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "TG — Typing...",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "TG ALTA — Guardar en DB": {
+        "main": [
+          [
+            {
+              "node": "TG ALTA — Confirmar registro",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "WhatsApp — Kapso Evento Crudo": {
+        "main": [
+          [
+            {
+              "node": "WA Raw — Extraer Teléfono y Mensaje",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "WA Raw — Extraer Teléfono y Mensaje": {
+        "main": [
+          [
+            {
+              "node": "WA Raw — ¿Es ALTA?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "WA Raw — ¿Es ALTA?": {
+        "main": [
+          [
+            {
+              "node": "WA Raw — Guardar Suscriptor",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "WA Raw — ¿Es STOP?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "WA Raw — ¿Es STOP?": {
+        "main": [
+          [
+            {
+              "node": "WA Raw — Dar de Baja",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          []
+        ]
+      },
+      "WA Raw — Guardar Suscriptor": {
+        "main": [
+          []
+        ]
+      },
+      "WA Raw — Dar de Baja": {
+        "main": [
+          []
+        ]
+      },
+      "TG — Typing...": {
+        "main": [
+          [
+            {
+              "node": "TG — AI Agent Mundial",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Erick RODAI",
+    "name": null,
+    "description": null,
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-06-10T16:46:23.822Z",
+        "id": 1976,
+        "workflowId": "cI5WRRTgnqkInqq0",
+        "versionId": "ec256ed1-d452-4841-b10e-c777ca5d292e",
+        "event": "activated",
+        "userId": "111326d0-ca57-4427-a4d0-5c6508637090"
+      },
+      {
+        "createdAt": "2026-06-10T16:46:23.586Z",
+        "id": 1975,
+        "workflowId": "cI5WRRTgnqkInqq0",
+        "versionId": "ec256ed1-d452-4841-b10e-c777ca5d292e",
+        "event": "deactivated",
+        "userId": "111326d0-ca57-4427-a4d0-5c6508637090"
+      }
+    ]
+  }
+}
