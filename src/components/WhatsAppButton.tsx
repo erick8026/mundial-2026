@@ -5,12 +5,15 @@ const WA_NUMBER = '50360883037';
 const WA_TEXT = encodeURIComponent('ALTA Mundial 2026');
 const WA_URL = `https://wa.me/${WA_NUMBER}?text=${WA_TEXT}`;
 
+declare const gtag: (...args: unknown[]) => void;
+
 export default function WhatsAppButton() {
   return (
     <a
       href={WA_URL}
       target="_blank"
       rel="noopener noreferrer"
+      onClick={() => typeof gtag !== 'undefined' && gtag('event', 'wa_button_click')}
       className="flex items-center gap-2 bg-gradient-to-r from-[#25D366] to-[#128C7E] hover:from-[#20ba58] hover:to-[#0f7a6e] text-white font-bold px-6 py-3 rounded-2xl shadow-lg shadow-green-900/30 transition-all hover:scale-105 active:scale-95 text-sm"
     >
       {/* WhatsApp icon SVG */}

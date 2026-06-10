@@ -2,12 +2,15 @@
 
 const TG_URL = 'https://t.me/rodmundial_bot?start=alta';
 
+declare const gtag: (...args: unknown[]) => void;
+
 export default function TelegramButton() {
   return (
     <a
       href={TG_URL}
       target="_blank"
       rel="noopener noreferrer"
+      onClick={() => typeof gtag !== 'undefined' && gtag('event', 'tg_button_click')}
       className="flex items-center gap-2 bg-gradient-to-r from-[#2AABEE] to-[#229ED9] hover:from-[#1e9bd6] hover:to-[#1a8ec2] text-white font-bold px-6 py-3 rounded-2xl shadow-lg shadow-blue-900/30 transition-all hover:scale-105 active:scale-95 text-sm"
     >
       {/* Telegram icon SVG */}

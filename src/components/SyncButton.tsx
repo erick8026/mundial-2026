@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react';
 
+declare const gtag: (...args: unknown[]) => void;
+
 export default function SyncButton({ baseUrl }: { baseUrl: string }) {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -48,7 +50,7 @@ export default function SyncButton({ baseUrl }: { baseUrl: string }) {
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-3 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-xl px-4 py-3 transition-colors group"
-            onClick={() => setOpen(false)}
+            onClick={() => { setOpen(false); typeof gtag !== 'undefined' && gtag('event', 'cal_google'); }}
           >
             <span className="text-2xl shrink-0">📆</span>
             <div>
@@ -62,7 +64,7 @@ export default function SyncButton({ baseUrl }: { baseUrl: string }) {
           <a
             href={webcalUrl}
             className="flex items-center gap-3 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-xl px-4 py-3 transition-colors group"
-            onClick={() => setOpen(false)}
+            onClick={() => { setOpen(false); typeof gtag !== 'undefined' && gtag('event', 'cal_ios'); }}
           >
             <span className="text-2xl shrink-0">🍎</span>
             <div>
@@ -88,7 +90,7 @@ export default function SyncButton({ baseUrl }: { baseUrl: string }) {
             href={calUrl}
             download="mundial2026.ics"
             className="flex items-center gap-3 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-xl px-4 py-3 transition-colors group"
-            onClick={() => setOpen(false)}
+            onClick={() => { setOpen(false); typeof gtag !== 'undefined' && gtag('event', 'cal_ics_download'); }}
           >
             <span className="text-2xl shrink-0">⬇️</span>
             <div>
