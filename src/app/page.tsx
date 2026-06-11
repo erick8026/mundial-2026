@@ -83,13 +83,25 @@ export default function Home() {
           <div className="w-full max-w-md bg-white/10 border border-white/20 rounded-2xl px-5 py-4 flex flex-col gap-3">
             <div className="text-center">
               <p className="text-white font-bold text-sm leading-snug">⚡ Alertas en tiempo real con IA</p>
-              <p className="text-green-200 text-xs mt-0.5">Te avisamos al instante a tu WhatsApp o Telegram</p>
+              <p className="text-green-200 text-xs mt-0.5">Todo el Mundial por <span className="font-bold text-white">$4.99</span> · WhatsApp o Telegram</p>
             </div>
             <div className="flex flex-wrap justify-center gap-2">
               {['⚽ Gol al instante', '⏱ 30 min antes', '🏁 Resultado final', '🤖 Pregúntale algo'].map((t) => (
                 <span key={t} className="text-xs font-semibold bg-white/15 text-white px-3 py-1 rounded-full">{t}</span>
               ))}
             </div>
+            <a
+              href="https://www.paypal.com/ncp/payment/JRQL4J79ECAWQ"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => typeof gtag !== 'undefined' && gtag('event', 'paypal_click')}
+              className="flex items-center justify-center gap-2 bg-[#FFC439] hover:bg-[#f0b429] text-[#003087] font-black px-4 py-2.5 rounded-xl transition-all hover:scale-105 active:scale-95 text-sm w-full"
+            >
+              <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 shrink-0" aria-hidden="true">
+                <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106zm14.146-14.42a3.35 3.35 0 0 0-.607-.541c-.013.076-.026.175-.041.254-.93 4.778-4.005 7.201-9.138 7.201h-2.19a.563.563 0 0 0-.556.479l-1.187 7.527h-.99l-.219 1.337c-.06.38.227.741.607.741h3.957a.641.641 0 0 0 .633-.598l.026-.175.503-3.179.032-.174a.641.641 0 0 1 .633-.598h.398c2.587 0 4.61-.608 5.804-2.274.922-1.293 1.273-2.983.834-5z"/>
+              </svg>
+              Pagar $4.99 con PayPal
+            </a>
             <div className="flex gap-2">
               <WhatsAppButton compact />
               <TelegramButton compact />
