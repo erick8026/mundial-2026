@@ -43,7 +43,9 @@ export const matches: Match[] = [
     venue: 'Estadio Azteca', city: 'Ciudad de México', country: 'Mexico',
     // Jun 11, 3:00 PM ET (EDT UTC-4) → 19:00 UTC
     utcDate: '2026-06-11T19:00:00Z',
-    status: 'upcoming',
+    status: 'completed',
+    homeScore: 2,
+    awayScore: 0,
   },
   {
     id: 'GA2', phase: 'group', group: 'A', matchNumber: 2,
