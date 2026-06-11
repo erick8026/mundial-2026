@@ -81,14 +81,11 @@ export default function Home() {
 
           {/* Alert CTA */}
           <div className="w-full max-w-md bg-white/10 border border-white/20 rounded-2xl px-5 py-4 flex flex-col gap-3">
-            <div className="flex items-start gap-3">
-              <span className="text-2xl leading-none mt-0.5">⚡</span>
-              <div>
-                <p className="text-white font-bold text-sm leading-snug">Alertas en tiempo real con IA</p>
-                <p className="text-green-200 text-xs mt-0.5">Te avisamos al instante a tu WhatsApp o Telegram</p>
-              </div>
+            <div className="text-center">
+              <p className="text-white font-bold text-sm leading-snug">⚡ Alertas en tiempo real con IA</p>
+              <p className="text-green-200 text-xs mt-0.5">Te avisamos al instante a tu WhatsApp o Telegram</p>
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap justify-center gap-2">
               {['⚽ Gol al instante', '⏱ 30 min antes', '🏁 Resultado final', '🤖 Pregúntale algo'].map((t) => (
                 <span key={t} className="text-xs font-semibold bg-white/15 text-white px-3 py-1 rounded-full">{t}</span>
               ))}
