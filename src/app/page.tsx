@@ -62,7 +62,7 @@ export default function Home() {
               <span className="text-4xl">🏆</span>
             </div>
             <p className="text-green-200 text-sm font-medium">
-              🇺🇸 USA · 🇨🇦 Canadá · 🇲🇽 México &nbsp;·&nbsp; 11 Jun – 26 Jul 2026
+              🇺🇸 USA · 🇨🇦 Canadá · 🇲🇽 México &nbsp;·&nbsp; 11 Jun – 19 Jul 2026
             </p>
           </div>
 
