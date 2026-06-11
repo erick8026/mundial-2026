@@ -138,7 +138,10 @@ export default function Home() {
                 href="https://www.paypal.com/ncp/payment/JRQL4J79ECAWQ"
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={() => typeof gtag !== 'undefined' && gtag('event', 'paypal_click')}
+                onClick={() => {
+                  const w = window as unknown as { gtag?: (...args: unknown[]) => void };
+                  w.gtag?.('event', 'paypal_click');
+                }}
                 className="flex items-center justify-center gap-2 bg-[#FFC439] hover:bg-[#f0b429] text-[#003087] font-black px-4 py-2.5 rounded-xl transition-all hover:scale-105 active:scale-95 text-sm w-full"
               >
                 <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 shrink-0" aria-hidden="true">
