@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { matches, phaseLabels, phaseOrder } from '@/data/matches';
-import type { Phase } from '@/types/match';
+import type { Match, Phase } from '@/types/match';
 import MatchCard from '@/components/MatchCard';
 import PhaseFilter, { type FilterValue } from '@/components/PhaseFilter';
 import SyncButton from '@/components/SyncButton';
@@ -14,17 +14,59 @@ const BASE_URL =
     ? window.location.origin
     : 'https://mundial.rodai.io';
 
-const totalCompleted = matches.filter((m) => m.status === 'completed').length;
-const totalUpcoming = matches.filter((m) => m.status !== 'completed' && m.status !== 'live').length;
-const totalLive = matches.filter((m) => m.status === 'live').length;
+type ApiScore = {
+  utcDate: string;
+  homeScore: number | null;
+  awayScore: number | null;
+  status: 'upcoming' | 'live' | 'completed';
+};
+
+function mergeScores(base: Match[], apiScores: ApiScore[]): Match[] {
+  return base.map((m) => {
+    const mTime = new Date(m.utcDate).getTime();
+    const hit = apiScores.find(
+      (s) => s.utcDate && Math.abs(new Date(s.utcDate).getTime() - mTime) < 90 * 60 * 1000,
+    );
+    if (!hit) return m;
+    return {
+      ...m,
+      status: hit.status,
+      homeScore: hit.homeScore ?? undefined,
+      awayScore: hit.awayScore ?? undefined,
+    };
+  });
+}
 
 export default function Home() {
   const [filter, setFilter] = useState<FilterValue>('all');
+  const [liveMatches, setLiveMatches] = useState<Match[]>(matches);
+
+  useEffect(() => {
+    async function fetchScores() {
+      try {
+        const res = await fetch('/api/scores');
+        if (!res.ok) return;
+        const scores: ApiScore[] = await res.json();
+        if (Array.isArray(scores) && scores.length > 0) {
+          setLiveMatches(mergeScores(matches, scores));
+        }
+      } catch {
+        // silent — keep static data on error
+      }
+    }
+    fetchScores();
+    const id = setInterval(fetchScores, 60_000);
+    return () => clearInterval(id);
+  }, []);
+
+  const totalCompleted = liveMatches.filter((m) => m.status === 'completed').length;
+  const totalUpcoming  = liveMatches.filter((m) => m.status !== 'completed' && m.status !== 'live').length;
+  const totalLive      = liveMatches.filter((m) => m.status === 'live').length;
 
   const filtered = useMemo(() => {
-    if (filter === 'all') return matches;
-    return matches.filter((m) => m.phase === filter);
-  }, [filter]);
+    if (filter === 'all') return liveMatches;
+    return liveMatches.filter((m) => m.phase === filter);
+  }, [filter, liveMatches]);
 
   // Group by phase then by group letter (within group phase)
   const sections = useMemo(() => {
