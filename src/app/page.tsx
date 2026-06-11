@@ -125,7 +125,7 @@ export default function Home() {
           <div className="w-full max-w-md bg-white/10 border border-white/20 rounded-2xl px-5 py-4 flex flex-col gap-3">
             <div className="text-center">
               <p className="text-white font-bold text-sm leading-snug">⚡ Alertas en tiempo real con IA</p>
-              <p className="text-green-200 text-xs mt-0.5">Todo el Mundial por <span className="font-bold text-white">$4.99</span> · WhatsApp o Telegram</p>
+              <p className="text-green-200 text-xs mt-0.5">WhatsApp o Telegram · Goles, resultados y más</p>
             </div>
             <div className="flex flex-wrap justify-center gap-2">
               {['⚽ Gol al instante', '⏱ 30 min antes', '🏁 Resultado final', '🤖 Pregúntale algo'].map((t) => (
