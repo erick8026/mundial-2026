@@ -28,13 +28,17 @@ export default function SyncButton({ baseUrl }: { baseUrl: string }) {
   };
 
   return (
-    <div className="relative inline-block" ref={ref}>
+    <div className="relative inline-flex flex-col items-center gap-1.5" ref={ref}>
+      <p className="text-green-100 text-xs font-bold flex items-center gap-1.5">
+        Los 104 partidos en tu calendario, con tu hora local
+        <span className="inline-block animate-bounce text-base leading-none">👇</span>
+      </p>
       <button
         onClick={() => setOpen((v) => !v)}
         className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold px-6 py-3 rounded-2xl shadow-lg shadow-green-200 transition-all hover:scale-105 active:scale-95 text-sm"
       >
-        <span className="text-lg">📅</span>
-        Agregar al Calendario
+        <span className="text-lg">📲</span>
+        Sincronizar con mi teléfono
         <span className={`transition-transform duration-200 ${open ? 'rotate-180' : ''}`}>▾</span>
       </button>
 
