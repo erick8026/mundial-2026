@@ -27,7 +27,8 @@ export const phaseOrder: Record<string, number> = {
 //  Groups A–L confirmed from the official draw (Dec 5, 2025, Washington D.C.)
 //  UTC times derived from official ET/local kick-off times:
 //    EDT (ET) = UTC−4 → +4 h
-//    CDT (Central/Mexico City/Guadalajara/Monterrey) = UTC−5 → +5 h
+//    CDT (Central US) = UTC−5 → +5 h
+//    Mexico (CDMX/Guadalajara/Monterrey) = UTC−6 todo el año (sin DST desde 2022) → +6 h
 //    PDT (LA/Santa Clara/Seattle/Vancouver) = UTC−7 → +7 h
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -773,7 +774,7 @@ export const matches: Match[] = [
   {
     id: 'R32-7', phase: 'round-of-32', matchNumber: 79,
     homeTeam: 'Por definir', awayTeam: 'Por definir',
-    venue: "Levi's Stadium", city: 'Ciudad de México', country: 'Mexico',
+    venue: 'Estadio Azteca', city: 'Ciudad de México', country: 'Mexico',
     utcDate: '2026-07-01T01:00:00Z', status: 'upcoming',
   },
   {
@@ -861,7 +862,7 @@ export const matches: Match[] = [
   {
     id: 'R16-5', phase: 'round-of-16', matchNumber: 93,
     homeTeam: 'Por definir', awayTeam: 'Por definir',
-    venue: "Levi's Stadium", city: 'Arlington', country: 'USA',
+    venue: 'AT&T Stadium', city: 'Arlington', country: 'USA',
     utcDate: '2026-07-06T19:00:00Z', status: 'upcoming',
   },
   {
