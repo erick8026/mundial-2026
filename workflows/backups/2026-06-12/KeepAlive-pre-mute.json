@@ -1,0 +1,526 @@
+{
+ "updatedAt": "2026-06-11T15:02:35.581Z",
+ "createdAt": "2026-06-11T15:02:35.581Z",
+ "id": "2ZX83Ms2m24f1biG",
+ "name": "🔔 Mundial 2026 — Ventana Keep-Alive",
+ "description": null,
+ "active": true,
+ "isArchived": false,
+ "nodes": [
+  {
+   "id": "ka-cron",
+   "name": "Cada 30 min",
+   "type": "n8n-nodes-base.scheduleTrigger",
+   "typeVersion": 1.2,
+   "position": [
+    0,
+    0
+   ],
+   "parameters": {
+    "rule": {
+     "interval": [
+      {
+       "field": "minutes",
+       "minutesInterval": 30
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "ka-wh",
+   "name": "Trigger Manual (test)",
+   "type": "n8n-nodes-base.webhook",
+   "typeVersion": 2,
+   "position": [
+    0,
+    200
+   ],
+   "parameters": {
+    "httpMethod": "POST",
+    "path": "keepalive-run",
+    "options": {}
+   },
+   "webhookId": "c2d5269a-ef97-437c-b9cf-c25187ae8e1e"
+  },
+  {
+   "id": "ka-select",
+   "name": "KA — Ventanas por Vencer",
+   "type": "n8n-nodes-base.postgres",
+   "typeVersion": 2.5,
+   "position": [
+    240,
+    100
+   ],
+   "credentials": {
+    "postgres": {
+     "id": "lZiJmyplRgdvifzN",
+     "name": "PG Local RODAI"
+    }
+   },
+   "parameters": {
+    "operation": "executeQuery",
+    "query": "SELECT s.phone, s.name, to_char(s.last_message_at, 'YYYY-MM-DD HH24:MI:SS') AS ventana_id\nFROM suscriptores s\nWHERE s.platform = 'whatsapp' AND s.active = true\n  AND NOW() >= s.last_message_at + INTERVAL '23 hours'\n  AND NOW() <  s.last_message_at + INTERVAL '24 hours'\n  AND NOT EXISTS (\n    SELECT 1 FROM alertas_enviadas a\n    WHERE a.phone = s.phone AND a.tipo = 'keepalive' AND a.detalle = to_char(s.last_message_at, 'YYYY-MM-DD HH24:MI:SS')\n  )"
+   }
+  },
+  {
+   "id": "ka-dedup",
+   "name": "KA — Registrar Envío (dedup)",
+   "type": "n8n-nodes-base.postgres",
+   "typeVersion": 2.5,
+   "position": [
+    480,
+    100
+   ],
+   "credentials": {
+    "postgres": {
+     "id": "lZiJmyplRgdvifzN",
+     "name": "PG Local RODAI"
+    }
+   },
+   "parameters": {
+    "operation": "executeQuery",
+    "query": "={{ \"WITH ins AS (INSERT INTO alertas_enviadas (phone, partido_id, tipo, detalle) VALUES ('\" + $json.phone + \"', 'ventana', 'keepalive', '\" + $json.ventana_id + \"') ON CONFLICT DO NOTHING RETURNING id) SELECT COALESCE((SELECT id FROM ins), -1) AS ins_id, '\" + $json.phone + \"' AS phone, '\" + ($json.name || '').replace(/'/g, \"''\") + \"' AS name\" }}"
+   }
+  },
+  {
+   "id": "ka-if",
+   "name": "KA — ¿Primera vez esta ventana?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2.2,
+   "position": [
+    720,
+    100
+   ],
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": false,
+      "typeValidation": "loose"
+     },
+     "conditions": [
+      {
+       "leftValue": "={{ $json.ins_id }}",
+       "rightValue": -1,
+       "operator": {
+        "type": "number",
+        "operation": "notEquals"
+       }
+      }
+     ],
+     "combinator": "and"
+    }
+   }
+  },
+  {
+   "id": "ka-send",
+   "name": "KA — Enviar Keep-Alive",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    960,
+    0
+   ],
+   "parameters": {
+    "method": "POST",
+    "url": "https://api.kapso.ai/meta/whatsapp/v24.0/1365226796664715/messages",
+    "sendHeaders": true,
+    "headerParameters": {
+     "parameters": [
+      {
+       "name": "X-API-KEY",
+       "value": "168d831e9f6e1e36601accc6d72c4e4229c1a20e38126f63f59096a04b842da7"
+      },
+      {
+       "name": "Content-Type",
+       "value": "application/json"
+      }
+     ]
+    },
+    "sendBody": true,
+    "specifyBody": "json",
+    "jsonBody": "={{ { \"messaging_product\": \"whatsapp\", \"to\": $json.phone, \"type\": \"text\", \"text\": { \"body\": \"⚽ ¡El Mundial sigue HOY! ¿Quién crees que gana el próximo partido? 🤔\\n\\nRespóndeme tu pronóstico y sigue recibiendo goles y resultados en tiempo real 🔥\\n\\nResponde STOP para darte de baja.\" } } }}"
+   }
+  },
+  {
+   "id": "ka-notif",
+   "name": "KA — Avisar a Erick",
+   "type": "n8n-nodes-base.telegram",
+   "typeVersion": 1.2,
+   "position": [
+    1200,
+    0
+   ],
+   "onError": "continueRegularOutput",
+   "credentials": {
+    "telegramApi": {
+     "id": "yovv0GvglRF0YNLq",
+     "name": "Telegram Bot Mundial 2026"
+    }
+   },
+   "parameters": {
+    "chatId": "675855669",
+    "text": "=⏰ Keep-alive enviado a {{ $('KA — Registrar Envío (dedup)').item.json.name || $('KA — Registrar Envío (dedup)').item.json.phone }} (+{{ $('KA — Registrar Envío (dedup)').item.json.phone }}) — su ventana 24h vencía en menos de 1 hora.",
+    "additionalFields": {
+     "appendAttribution": false
+    }
+   },
+   "webhookId": "2f49bced-ce1e-443f-bac1-915bddbc4618"
+  }
+ ],
+ "connections": {
+  "Cada 30 min": {
+   "main": [
+    [
+     {
+      "node": "KA — Ventanas por Vencer",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Trigger Manual (test)": {
+   "main": [
+    [
+     {
+      "node": "KA — Ventanas por Vencer",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "KA — Ventanas por Vencer": {
+   "main": [
+    [
+     {
+      "node": "KA — Registrar Envío (dedup)",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "KA — Registrar Envío (dedup)": {
+   "main": [
+    [
+     {
+      "node": "KA — ¿Primera vez esta ventana?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "KA — ¿Primera vez esta ventana?": {
+   "main": [
+    [
+     {
+      "node": "KA — Enviar Keep-Alive",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    []
+   ]
+  },
+  "KA — Enviar Keep-Alive": {
+   "main": [
+    [
+     {
+      "node": "KA — Avisar a Erick",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "settings": {
+  "executionOrder": "v1",
+  "errorWorkflow": "EsaoKCXpD3TZMCje"
+ },
+ "staticData": {
+  "node:Cada 30 min": {
+   "recurrenceRules": []
+  }
+ },
+ "meta": null,
+ "pinData": null,
+ "versionId": "d51620d8-f2ca-477e-961d-11b4e0f869a6",
+ "activeVersionId": "d51620d8-f2ca-477e-961d-11b4e0f869a6",
+ "versionCounter": 4,
+ "triggerCount": 2,
+ "shared": [
+  {
+   "updatedAt": "2026-06-11T15:02:35.584Z",
+   "createdAt": "2026-06-11T15:02:35.584Z",
+   "role": "workflow:owner",
+   "workflowId": "2ZX83Ms2m24f1biG",
+   "projectId": "g2T64qb4JyW1mWdT",
+   "project": {
+    "updatedAt": "2026-03-23T02:01:06.896Z",
+    "createdAt": "2026-03-23T01:54:43.748Z",
+    "id": "g2T64qb4JyW1mWdT",
+    "name": "Erick RODAI <admin@rodai.io>",
+    "type": "personal",
+    "icon": null,
+    "description": null,
+    "creatorId": "111326d0-ca57-4427-a4d0-5c6508637090"
+   }
+  }
+ ],
+ "tags": [],
+ "activeVersion": {
+  "updatedAt": "2026-06-11T15:02:35.586Z",
+  "createdAt": "2026-06-11T15:02:35.586Z",
+  "versionId": "d51620d8-f2ca-477e-961d-11b4e0f869a6",
+  "workflowId": "2ZX83Ms2m24f1biG",
+  "nodes": [
+   {
+    "id": "ka-cron",
+    "name": "Cada 30 min",
+    "type": "n8n-nodes-base.scheduleTrigger",
+    "typeVersion": 1.2,
+    "position": [
+     0,
+     0
+    ],
+    "parameters": {
+     "rule": {
+      "interval": [
+       {
+        "field": "minutes",
+        "minutesInterval": 30
+       }
+      ]
+     }
+    }
+   },
+   {
+    "id": "ka-wh",
+    "name": "Trigger Manual (test)",
+    "type": "n8n-nodes-base.webhook",
+    "typeVersion": 2,
+    "position": [
+     0,
+     200
+    ],
+    "parameters": {
+     "httpMethod": "POST",
+     "path": "keepalive-run",
+     "options": {}
+    },
+    "webhookId": "c2d5269a-ef97-437c-b9cf-c25187ae8e1e"
+   },
+   {
+    "id": "ka-select",
+    "name": "KA — Ventanas por Vencer",
+    "type": "n8n-nodes-base.postgres",
+    "typeVersion": 2.5,
+    "position": [
+     240,
+     100
+    ],
+    "credentials": {
+     "postgres": {
+      "id": "lZiJmyplRgdvifzN",
+      "name": "PG Local RODAI"
+     }
+    },
+    "parameters": {
+     "operation": "executeQuery",
+     "query": "SELECT s.phone, s.name, to_char(s.last_message_at, 'YYYY-MM-DD HH24:MI:SS') AS ventana_id\nFROM suscriptores s\nWHERE s.platform = 'whatsapp' AND s.active = true\n  AND NOW() >= s.last_message_at + INTERVAL '23 hours'\n  AND NOW() <  s.last_message_at + INTERVAL '24 hours'\n  AND NOT EXISTS (\n    SELECT 1 FROM alertas_enviadas a\n    WHERE a.phone = s.phone AND a.tipo = 'keepalive' AND a.detalle = to_char(s.last_message_at, 'YYYY-MM-DD HH24:MI:SS')\n  )"
+    }
+   },
+   {
+    "id": "ka-dedup",
+    "name": "KA — Registrar Envío (dedup)",
+    "type": "n8n-nodes-base.postgres",
+    "typeVersion": 2.5,
+    "position": [
+     480,
+     100
+    ],
+    "credentials": {
+     "postgres": {
+      "id": "lZiJmyplRgdvifzN",
+      "name": "PG Local RODAI"
+     }
+    },
+    "parameters": {
+     "operation": "executeQuery",
+     "query": "={{ \"WITH ins AS (INSERT INTO alertas_enviadas (phone, partido_id, tipo, detalle) VALUES ('\" + $json.phone + \"', 'ventana', 'keepalive', '\" + $json.ventana_id + \"') ON CONFLICT DO NOTHING RETURNING id) SELECT COALESCE((SELECT id FROM ins), -1) AS ins_id, '\" + $json.phone + \"' AS phone, '\" + ($json.name || '').replace(/'/g, \"''\") + \"' AS name\" }}"
+    }
+   },
+   {
+    "id": "ka-if",
+    "name": "KA — ¿Primera vez esta ventana?",
+    "type": "n8n-nodes-base.if",
+    "typeVersion": 2.2,
+    "position": [
+     720,
+     100
+    ],
+    "parameters": {
+     "conditions": {
+      "options": {
+       "caseSensitive": false,
+       "typeValidation": "loose"
+      },
+      "conditions": [
+       {
+        "leftValue": "={{ $json.ins_id }}",
+        "rightValue": -1,
+        "operator": {
+         "type": "number",
+         "operation": "notEquals"
+        }
+       }
+      ],
+      "combinator": "and"
+     }
+    }
+   },
+   {
+    "id": "ka-send",
+    "name": "KA — Enviar Keep-Alive",
+    "type": "n8n-nodes-base.httpRequest",
+    "typeVersion": 4.2,
+    "position": [
+     960,
+     0
+    ],
+    "parameters": {
+     "method": "POST",
+     "url": "https://api.kapso.ai/meta/whatsapp/v24.0/1365226796664715/messages",
+     "sendHeaders": true,
+     "headerParameters": {
+      "parameters": [
+       {
+        "name": "X-API-KEY",
+        "value": "168d831e9f6e1e36601accc6d72c4e4229c1a20e38126f63f59096a04b842da7"
+       },
+       {
+        "name": "Content-Type",
+        "value": "application/json"
+       }
+      ]
+     },
+     "sendBody": true,
+     "specifyBody": "json",
+     "jsonBody": "={{ { \"messaging_product\": \"whatsapp\", \"to\": $json.phone, \"type\": \"text\", \"text\": { \"body\": \"⚽ ¡El Mundial sigue HOY! ¿Quién crees que gana el próximo partido? 🤔\\n\\nRespóndeme tu pronóstico y sigue recibiendo goles y resultados en tiempo real 🔥\\n\\nResponde STOP para darte de baja.\" } } }}"
+    }
+   },
+   {
+    "id": "ka-notif",
+    "name": "KA — Avisar a Erick",
+    "type": "n8n-nodes-base.telegram",
+    "typeVersion": 1.2,
+    "position": [
+     1200,
+     0
+    ],
+    "onError": "continueRegularOutput",
+    "credentials": {
+     "telegramApi": {
+      "id": "yovv0GvglRF0YNLq",
+      "name": "Telegram Bot Mundial 2026"
+     }
+    },
+    "parameters": {
+     "chatId": "675855669",
+     "text": "=⏰ Keep-alive enviado a {{ $('KA — Registrar Envío (dedup)').item.json.name || $('KA — Registrar Envío (dedup)').item.json.phone }} (+{{ $('KA — Registrar Envío (dedup)').item.json.phone }}) — su ventana 24h vencía en menos de 1 hora.",
+     "additionalFields": {
+      "appendAttribution": false
+     }
+    },
+    "webhookId": "2f49bced-ce1e-443f-bac1-915bddbc4618"
+   }
+  ],
+  "connections": {
+   "Cada 30 min": {
+    "main": [
+     [
+      {
+       "node": "KA — Ventanas por Vencer",
+       "type": "main",
+       "index": 0
+      }
+     ]
+    ]
+   },
+   "Trigger Manual (test)": {
+    "main": [
+     [
+      {
+       "node": "KA — Ventanas por Vencer",
+       "type": "main",
+       "index": 0
+      }
+     ]
+    ]
+   },
+   "KA — Ventanas por Vencer": {
+    "main": [
+     [
+      {
+       "node": "KA — Registrar Envío (dedup)",
+       "type": "main",
+       "index": 0
+      }
+     ]
+    ]
+   },
+   "KA — Registrar Envío (dedup)": {
+    "main": [
+     [
+      {
+       "node": "KA — ¿Primera vez esta ventana?",
+       "type": "main",
+       "index": 0
+      }
+     ]
+    ]
+   },
+   "KA — ¿Primera vez esta ventana?": {
+    "main": [
+     [
+      {
+       "node": "KA — Enviar Keep-Alive",
+       "type": "main",
+       "index": 0
+      }
+     ],
+     []
+    ]
+   },
+   "KA — Enviar Keep-Alive": {
+    "main": [
+     [
+      {
+       "node": "KA — Avisar a Erick",
+       "type": "main",
+       "index": 0
+      }
+     ]
+    ]
+   }
+  },
+  "authors": "Erick RODAI",
+  "name": null,
+  "description": null,
+  "autosaved": false,
+  "workflowPublishHistory": [
+   {
+    "createdAt": "2026-06-11T15:02:36.389Z",
+    "id": 2102,
+    "workflowId": "2ZX83Ms2m24f1biG",
+    "versionId": "d51620d8-f2ca-477e-961d-11b4e0f869a6",
+    "event": "activated",
+    "userId": "111326d0-ca57-4427-a4d0-5c6508637090"
+   }
+  ]
+ }
+}
